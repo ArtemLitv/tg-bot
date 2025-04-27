@@ -111,15 +111,49 @@ async function sendMessage(chatId: number, content: string | MessageContent): Pr
   }
 }
 
-// Handle /start command
-bot.onText(/\/start/, (msg: TelegramBot.Message) => {
+// Store users who have received the welcome message
+const welcomedUsers = new Set<number>();
+
+// Send welcome message when user first interacts with the bot
+bot.on('message', async (msg) => {
+  // Skip if it's a /start command (handled separately)
+  if (msg.text && msg.text.startsWith('/start')) return;
+
   const chatId = msg.chat.id;
+  const userId = msg.from?.id;
+
+  if (!userId) return;
+
+  // If user hasn't been welcomed yet
+  if (!welcomedUsers.has(userId)) {
+    welcomedUsers.add(userId);
+
+    // Send welcome image and text
+    await bot.sendPhoto(chatId, 'https://disk.yandex.ru/i/YgqwFEEff79cbA');
+    await bot.sendMessage(chatId, 'Приветствуем Вас в боте синергии отраслевых выставок EXPO!\n\nЗдесь организаторы собрали всю самую важную информацию о выставках, которые пройдут 27–30 мая 2025 в Москве, МВЦ «Крокус Экспо».');
+
+    // Prompt to use /start command
+    await bot.sendMessage(chatId, 'Нажмите на кнопку /start для начала работы с ботом');
+  }
+});
+
+// Handle /start command
+bot.onText(/\/start/, async (msg: TelegramBot.Message) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from?.id;
+
+  if (!userId) return;
 
   // Reset user's menu state
-  userMenuState[chatId] = [];
+  userMenuState[userId] = [];
 
-  // Send welcome message
-  bot.sendMessage(chatId, 'Welcome to the bot! Please select an option:', {
+  // Send EXPO description
+  await bot.sendMessage(chatId, 'EXPO – это самое крупное отраслевое выставочное мероприятие в России и Восточной Европе, которое объединяет людей, идеи и технологии из разных, но смежных отраслей, создавая уникальную среду для обмена знаниями и опытом.\n\nСинергия 4 авторитетных отраслевых B2B выставок под единым брендом формирует беспрецедентный поток потенциальных клиентов, которого нет больше нигде.\n\n@cttexpo\nКирпичи как символ строительства, главным инструментом которого является строительная техника. В этом году выставка отметит 25-летний юбилей вместе с 80 000+ профессионалами своего дела.\n\n@comvex\nПерекрёсток как символ движения и развития коммерческого транспорта, который объединяет ключевых игроков рынка и создаёт условия для принятия прорывных бизнес-решений.\n\n@ctoexpo\nНезаменимый ключ для слаженной и продуктивной работы всех участников послепродажного обслуживания и сервиса автотранспорта: с его помощью можно запускать результативные проекты с инвесторами и единомышленниками.\n\n@logistikaexpo\nТочка на карте логистических потоков, которая определяет маршруты движения товаров и успешное взаимодействие клиентов и партнёров.\n\nПодробнее: [sigma-expo.ru/expo](https://sigma-expo.ru/expo)', {
+    parse_mode: 'Markdown'
+  });
+
+  // Send main menu
+  await bot.sendMessage(chatId, 'Выбери направление, которое тебя интересует 👇', {
     reply_markup: {
       keyboard: generateKeyboard(menu),
       resize_keyboard: true
@@ -146,7 +180,7 @@ bot.on('message', async (msg) => {
 
   if (!selectedItem) {
     // Unknown command
-    bot.sendMessage(chatId, 'Unknown option. Please select from the menu:', {
+    bot.sendMessage(chatId, 'Неизвестная опция. Пожалуйста, выберите из меню:', {
       reply_markup: {
         keyboard: generateKeyboard(currentMenu),
         resize_keyboard: true
@@ -158,15 +192,26 @@ bot.on('message', async (msg) => {
   // Handle "back" action
   if (selectedItem.action === 'back') {
     if (userMenuState[userId].length > 0) {
-      userMenuState[userId].pop();
-      const newMenu = getCurrentMenu(userId);
-
-      bot.sendMessage(chatId, 'Going back...', {
-        reply_markup: {
-          keyboard: generateKeyboard(newMenu),
-          resize_keyboard: true
-        }
-      });
+      // If the title is "В главное меню", reset to main menu
+      if (selectedItem.title === 'В главное меню') {
+        userMenuState[userId] = [];
+        bot.sendMessage(chatId, 'Главное меню:', {
+          reply_markup: {
+            keyboard: generateKeyboard(menu),
+            resize_keyboard: true
+          }
+        });
+      } else {
+        // Otherwise just go back one level
+        userMenuState[userId].pop();
+        const newMenu = getCurrentMenu(userId);
+        bot.sendMessage(chatId, 'Назад...', {
+          reply_markup: {
+            keyboard: generateKeyboard(newMenu),
+            resize_keyboard: true
+          }
+        });
+      }
     }
     return;
   }
@@ -175,7 +220,15 @@ bot.on('message', async (msg) => {
   if (selectedItem.subMenu) {
     userMenuState[userId].push(selectedItem.title);
 
-    bot.sendMessage(chatId, `${selectedItem.title} menu:`, {
+    // Customize message based on menu type
+    let message = '';
+    if (selectedItem.title === 'Выставки') {
+      message = 'Выбери выставку, которая тебя интересует 👇';
+    } else {
+      message = `${selectedItem.title}:`;
+    }
+
+    bot.sendMessage(chatId, message, {
       reply_markup: {
         keyboard: generateKeyboard(selectedItem.subMenu),
         resize_keyboard: true
