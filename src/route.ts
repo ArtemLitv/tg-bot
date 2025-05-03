@@ -170,6 +170,33 @@ export function setupRoutes(bot: TelegramBot, menu: MenuItem[], userMenuState: R
           await sendMessage(bot, chatId, recursiveItem.message);
           return;
         }
+
+        // Handle "back" action for recursively found items
+        if (recursiveItem.action === 'back') {
+          if (userMenuState[userId].length > 0) {
+            // If the title is "В главное меню", reset to main menu
+            if (recursiveItem.title === 'В главное меню') {
+              userMenuState[userId] = [];
+              bot.sendMessage(chatId, 'Главное меню:', {
+                reply_markup: {
+                  keyboard: generateKeyboard(menu),
+                  resize_keyboard: true
+                }
+              });
+            } else {
+              // Otherwise just go back one level
+              userMenuState[userId].pop();
+              const newMenu = getCurrentMenu(userId, userMenuState, menu);
+              bot.sendMessage(chatId, 'Назад...', {
+                reply_markup: {
+                  keyboard: generateKeyboard(newMenu),
+                  resize_keyboard: true
+                }
+              });
+            }
+          }
+          return;
+        }
       }
 
       // Unknown command
