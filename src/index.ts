@@ -1,26 +1,6 @@
-import TelegramBot from 'node-telegram-bot-api';
-import dotenv from 'dotenv';
-import { menu } from './menu';
-import { setupRoutes } from './route';
+// This file will serve as the entry point for the admin panel in the future
+// For now, it just imports the bot to ensure it starts
 
-// Load environment variables
-dotenv.config();
+import '../bot/index';
 
-// Get bot token from environment variables
-const token = process.env.TELEGRAM_BOT_TOKEN;
-
-if (!token) {
-  console.error('TELEGRAM_BOT_TOKEN is not defined in .env file');
-  process.exit(1);
-}
-
-// Create a new bot instance
-const bot = new TelegramBot(token, { polling: true });
-
-// Store user's current menu state
-const userMenuState: Record<number, string[]> = {};
-
-// Setup all routes
-setupRoutes(bot, menu, userMenuState);
-
-console.log('Bot started successfully! 🤖');
+console.log('Admin panel will be implemented here in the future');
