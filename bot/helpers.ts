@@ -8,22 +8,6 @@ export function generateKeyboard(items: MenuItem[]): TelegramBot.KeyboardButton[
   ];
 }
 
-// Function to find a menu item by its title
-export function findMenuItem(path: string[], menu: MenuItem[]): MenuItem | null {
-  if (path.length === 0) return null;
-
-  let currentMenu = menu;
-  let currentItem: MenuItem | null = null;
-
-  for (const title of path) {
-    currentItem = currentMenu.find(item => item.title === title) || null;
-    if (!currentItem || !currentItem.subMenu) break;
-    currentMenu = currentItem.subMenu;
-  }
-
-  return currentItem;
-}
-
 // Function to find a menu item recursively by its title
 export function findMenuItemRecursive(title: string, menu: MenuItem[]): MenuItem | null {
   // Helper function to normalize text for comparison

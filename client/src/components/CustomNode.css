@@ -1,0 +1,107 @@
+/* Стили для кастомной ноды */
+.custom-node {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 250px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Стили для разных типов нод */
+.react-flow__node-default {
+  background-color: #f5f5f5;
+}
+
+.react-flow__node-system {
+  background-color: #e6f7ff;
+}
+
+.react-flow__node-message {
+  background-color: #f6ffed;
+}
+
+.react-flow__node-menu {
+  background-color: #fff7e6;
+}
+
+/* Стили для заголовка ноды */
+.node-header {
+  padding: 10px;
+  background-color: #f5f5f5;
+}
+
+.node-header strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.node-meta {
+  font-size: 12px;
+  color: #666;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Разделительная черта */
+.node-divider {
+  height: 1px;
+  background-color: #ddd;
+  width: 100%;
+}
+
+/* Контент ноды */
+.node-content {
+  display: flex;
+  padding: 10px;
+}
+
+/* Левая часть с входящим соединением */
+.node-input {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.node-bullet {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #555;
+  margin-left: 5px;
+}
+
+.node-input-handle {
+  width: 8px !important;
+  height: 8px !important;
+  background-color: #555 !important;
+}
+
+/* Правая часть с кнопками */
+.node-buttons {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.node-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 8px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  position: relative;
+}
+
+.button-label {
+  font-size: 12px;
+  flex: 1;
+}
+
+.button-handle {
+  width: 8px !important;
+  height: 8px !important;
+  background-color: #555 !important;
+}

@@ -1,7 +1,11 @@
 /tmp
 /out-tsc
+/.idea
+/dist
+/.junie
 
 /node_modules
+/client/node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

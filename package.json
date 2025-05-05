@@ -6,7 +6,12 @@
   "scripts": {
     "build": "tsc && mkdir -p dist/config && cp config/bot-config.json dist/config/",
     "start": "node dist/src/index.js",
-    "dev": "tsc && mkdir -p dist/config && cp config/bot-config.json dist/config/ && node dist/src/index.js"
+    "dev": "tsc && mkdir -p dist/config && cp config/bot-config.json dist/config/ && node dist/src/index.js",
+    "///////": "///////client/////////",
+    "client:install": "cd client && npm install",
+    "client:build": "cd client && npm run build",
+    "client:start": "cd client && npm start",
+    "client": "npm run client:start"
   },
   "dependencies": {
     "dotenv": "^16.3.1",
