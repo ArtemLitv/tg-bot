@@ -88,6 +88,7 @@ export function getCurrentMenu(userId: number, userMenuState: Record<number, str
 export async function sendMessage(bot: TelegramBot, chatId: number, content: string | MessageContent): Promise<void> {
   if (typeof content === 'string') {
     await bot.sendMessage(chatId, content);
+    console.log(`Отправлено текстовое сообщение пользователю ${chatId}: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`);
     return;
   }
 
@@ -96,26 +97,31 @@ export async function sendMessage(bot: TelegramBot, chatId: number, content: str
     try {
       // If photo is present, send it first without any caption
       await bot.sendPhoto(chatId, content.photo);
+      console.log(`Отправлено фото пользователю ${chatId}: ${content.photo.substring(0, 30)}...`);
 
       // Then send the text as a separate message
       if (content.text) {
         await bot.sendMessage(chatId, content.text);
+        console.log(`Отправлено текстовое сообщение пользователю ${chatId}: "${content.text.substring(0, 50)}${content.text.length > 50 ? '...' : ''}"`);
       }
 
       // If there's also a link, send it as a separate message
       if (content.link) {
         const linkMessage = `[${content.link.text}](${content.link.url})`;
         await bot.sendMessage(chatId, linkMessage, { parse_mode: 'Markdown' });
+        console.log(`Отправлена ссылка пользователю ${chatId}: ${content.link.text} (${content.link.url})`);
       }
     } catch (error) {
       console.error('Error sending photo:', error);
       // Fallback to sending just the text and link
       if (content.text) {
         await bot.sendMessage(chatId, content.text);
+        console.log(`Отправлено текстовое сообщение (fallback) пользователю ${chatId}: "${content.text.substring(0, 50)}${content.text.length > 50 ? '...' : ''}"`);
       }
       if (content.link) {
         const linkMessage = `[${content.link.text}](${content.link.url})`;
         await bot.sendMessage(chatId, linkMessage, { parse_mode: 'Markdown' });
+        console.log(`Отправлена ссылка (fallback) пользователю ${chatId}: ${content.link.text} (${content.link.url})`);
       }
     }
   } else if (content.link) {
@@ -123,14 +129,21 @@ export async function sendMessage(bot: TelegramBot, chatId: number, content: str
     const text = content.text ? `${content.text}\n\n` : '';
     const message = `${text}[${content.link.text}](${content.link.url})`;
     await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+    console.log(`Отправлено сообщение со ссылкой пользователю ${chatId}: ${content.link.text} (${content.link.url})`);
+    if (content.text) {
+      console.log(`Текст сообщения: "${content.text.substring(0, 50)}${content.text.length > 50 ? '...' : ''}"`);
+    }
   } else if (content.location) {
     // If location is present (and no photo or link)
     await bot.sendLocation(chatId, content.location.latitude, content.location.longitude);
+    console.log(`Отправлена геолокация пользователю ${chatId}: ${content.location.latitude}, ${content.location.longitude}`);
     if (content.text) {
       await bot.sendMessage(chatId, content.text);
+      console.log(`Отправлено текстовое сообщение с геолокацией пользователю ${chatId}: "${content.text.substring(0, 50)}${content.text.length > 50 ? '...' : ''}"`);
     }
   } else if (content.text) {
     // If only text is present
     await bot.sendMessage(chatId, content.text);
+    console.log(`Отправлено текстовое сообщение пользователю ${chatId}: "${content.text.substring(0, 50)}${content.text.length > 50 ? '...' : ''}"`);
   }
 }

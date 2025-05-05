@@ -1,0 +1,1174 @@
+{
+  "start_node_id": "welcome",
+  "languages": ["ru", "en"],
+  "nodes": [
+    {
+      "id": "init",
+      "type": "system",
+      "description": "Инициализация бота",
+      "actions": [
+        {
+          "type": "send_message",
+          "content": {
+            "ru": "Добро пожаловать в бота синергии отраслевых выставок EXPO!",
+            "en": "Welcome to the EXPO industry exhibitions synergy bot!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "welcome",
+      "type": "message",
+      "description": "Приветственное сообщение",
+      "content": {
+        "ru": {
+          "text": "EXPO – это самое крупное отраслевое выставочное мероприятие в России и Восточной Европе, которое объединяет людей, идеи и технологии из разных, но смежных отраслей, создавая уникальную среду для обмена знаниями и опытом.\n\nСинергия 4 авторитетных отраслевых B2B выставок под единым брендом формирует беспрецедентный поток потенциальных клиентов, которого нет больше нигде.",
+          "format": "markdown",
+          "attachments": [
+            { "type": "image", "url": "https://disk.yandex.ru/i/YgqwFEEff79cbA" }
+          ]
+        },
+        "en": {
+          "text": "EXPO is the largest industry exhibition event in Russia and Eastern Europe, bringing together people, ideas and technologies from different but related industries, creating a unique environment for knowledge and experience exchange.\n\nThe synergy of 4 authoritative industry B2B exhibitions under a single brand forms an unprecedented flow of potential customers that doesn't exist anywhere else.",
+          "format": "markdown",
+          "attachments": [
+            { "type": "image", "url": "https://disk.yandex.ru/i/YgqwFEEff79cbA" }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Выставки", "en": "Exhibitions" },
+          "target_node_id": "exhibitions"
+        },
+        {
+          "label": { "ru": "Карта экспозиции 2025", "en": "Exposition Map 2025" },
+          "target_node_id": "map"
+        },
+        {
+          "label": { "ru": "Маршрут проезда", "en": "Directions" },
+          "target_node_id": "directions"
+        },
+        {
+          "label": { "ru": "Промокод для билета", "en": "Promo code for ticket" },
+          "target_node_id": "promo"
+        },
+        {
+          "label": { "ru": "Отраслевые конкурсы", "en": "Industry competitions" },
+          "target_node_id": "competitions"
+        },
+        {
+          "label": { "ru": "Отраслевые журналы", "en": "Industry magazines" },
+          "target_node_id": "magazines"
+        }
+      ]
+    },
+    {
+      "id": "exhibitions",
+      "type": "menu",
+      "description": "Меню выставок",
+      "content": {
+        "ru": {
+          "text": "Выбери выставку, которая тебя интересует 👇",
+          "format": "plain"
+        },
+        "en": {
+          "text": "Choose the exhibition you are interested in 👇",
+          "format": "plain"
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "CTT Expo", "en": "CTT Expo" },
+          "target_node_id": "ctt_expo"
+        },
+        {
+          "label": { "ru": "COMvex", "en": "COMvex" },
+          "target_node_id": "comvex"
+        },
+        {
+          "label": { "ru": "CTO Expo", "en": "CTO Expo" },
+          "target_node_id": "cto_expo"
+        },
+        {
+          "label": { "ru": "Logistika Expo", "en": "Logistika Expo" },
+          "target_node_id": "logistika_expo"
+        },
+        {
+          "label": { "ru": "В главное меню", "en": "Back to main menu" },
+          "target_node_id": "back_to_main"
+        }
+      ]
+    },
+    {
+      "id": "ctt_expo",
+      "type": "menu",
+      "description": "Меню CTT Expo",
+      "content": {
+        "ru": {
+          "text": "CTT Expo:",
+          "format": "plain"
+        },
+        "en": {
+          "text": "CTT Expo:",
+          "format": "plain"
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Получить билет", "en": "Get ticket" },
+          "target_node_id": "ctt_ticket"
+        },
+        {
+          "label": { "ru": "Список участников", "en": "List of participants" },
+          "target_node_id": "ctt_participants"
+        },
+        {
+          "label": { "ru": "Деловая программа", "en": "Business program" },
+          "target_node_id": "ctt_program"
+        },
+        {
+          "label": { "ru": "Юбилейные стикеры выставки", "en": "Anniversary stickers" },
+          "target_node_id": "ctt_stickers"
+        },
+        {
+          "label": { "ru": "Сайт", "en": "Website" },
+          "target_node_id": "ctt_website"
+        },
+        {
+          "label": { "ru": "В главное меню", "en": "Back to main menu" },
+          "target_node_id": "back_to_main"
+        }
+      ]
+    },
+    {
+      "id": "ctt_ticket",
+      "type": "message",
+      "description": "Билет CTT Expo",
+      "content": {
+        "ru": {
+          "text": "Получить билет на CTT Expo",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Получить билет",
+              "url": "https://ctt-expo.ru/registration?payed_promocode=TGCTT"
+            }
+          ]
+        },
+        "en": {
+          "text": "Get ticket for CTT Expo",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Get ticket",
+              "url": "https://ctt-expo.ru/registration?payed_promocode=TGCTT"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "ctt_expo"
+        }
+      ]
+    },
+    {
+      "id": "comvex",
+      "type": "menu",
+      "description": "Меню COMvex",
+      "content": {
+        "ru": {
+          "text": "COMvex:",
+          "format": "plain"
+        },
+        "en": {
+          "text": "COMvex:",
+          "format": "plain"
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Получить билет", "en": "Get ticket" },
+          "target_node_id": "comvex_ticket"
+        },
+        {
+          "label": { "ru": "Список участников", "en": "List of participants" },
+          "target_node_id": "comvex_participants"
+        },
+        {
+          "label": { "ru": "Деловая программа", "en": "Business program" },
+          "target_node_id": "comvex_program"
+        },
+        {
+          "label": { "ru": "Сайт", "en": "Website" },
+          "target_node_id": "comvex_website"
+        },
+        {
+          "label": { "ru": "В главное меню", "en": "Back to main menu" },
+          "target_node_id": "back_to_main"
+        }
+      ]
+    },
+    {
+      "id": "comvex_ticket",
+      "type": "message",
+      "description": "Билет COMvex",
+      "content": {
+        "ru": {
+          "text": "Получить билет на COMvex",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Получить билет",
+              "url": "https://comvex.ru/registration?payed_promocode=TGCMX"
+            }
+          ]
+        },
+        "en": {
+          "text": "Get ticket for COMvex",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Get ticket",
+              "url": "https://comvex.ru/registration?payed_promocode=TGCMX"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "comvex"
+        }
+      ]
+    },
+    {
+      "id": "comvex_participants",
+      "type": "message",
+      "description": "Список участников COMvex",
+      "content": {
+        "ru": {
+          "text": "Список участников COMvex",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Список участников",
+              "url": "https://catalog.comvex.ru/expositions/exposition/5876"
+            }
+          ]
+        },
+        "en": {
+          "text": "List of COMvex participants",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "List of participants",
+              "url": "https://catalog.comvex.ru/expositions/exposition/5876"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "comvex"
+        }
+      ]
+    },
+    {
+      "id": "comvex_program",
+      "type": "message",
+      "description": "Деловая программа COMvex",
+      "content": {
+        "ru": {
+          "text": "Деловая программа COMvex",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Деловая программа",
+              "url": "https://comvex.ru/business_program"
+            }
+          ]
+        },
+        "en": {
+          "text": "COMvex business program",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Business program",
+              "url": "https://comvex.ru/business_program"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "comvex"
+        }
+      ]
+    },
+    {
+      "id": "comvex_website",
+      "type": "message",
+      "description": "Сайт COMvex",
+      "content": {
+        "ru": {
+          "text": "Сайт выставки COMvex",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Перейти на сайт",
+              "url": "https://comvex-expo.ru/"
+            }
+          ]
+        },
+        "en": {
+          "text": "COMvex exhibition website",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Go to website",
+              "url": "https://comvex-expo.ru/"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "comvex"
+        }
+      ]
+    },
+    {
+      "id": "ctt_participants",
+      "type": "message",
+      "description": "Список участников CTT Expo",
+      "content": {
+        "ru": {
+          "text": "Список участников CTT Expo",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Список участников",
+              "url": "https://catalog.ctt-expo.ru/expositions/exposition/5427"
+            }
+          ]
+        },
+        "en": {
+          "text": "List of CTT Expo participants",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "List of participants",
+              "url": "https://catalog.ctt-expo.ru/expositions/exposition/5427"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "ctt_expo"
+        }
+      ]
+    },
+    {
+      "id": "ctt_program",
+      "type": "message",
+      "description": "Деловая программа CTT Expo",
+      "content": {
+        "ru": {
+          "text": "Деловая программа CTT Expo",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Деловая программа",
+              "url": "https://ctt-expo.ru/ctt-forum-2024"
+            }
+          ]
+        },
+        "en": {
+          "text": "CTT Expo business program",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Business program",
+              "url": "https://ctt-expo.ru/ctt-forum-2024"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "ctt_expo"
+        }
+      ]
+    },
+    {
+      "id": "ctt_stickers",
+      "type": "message",
+      "description": "Юбилейные стикеры CTT Expo",
+      "content": {
+        "ru": {
+          "text": "Юбилейные стикеры CTT Expo",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Юбилейные стикеры выставки",
+              "url": "https://t.me/addstickers/CTT_Expo"
+            }
+          ]
+        },
+        "en": {
+          "text": "CTT Expo anniversary stickers",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Anniversary stickers",
+              "url": "https://t.me/addstickers/CTT_Expo"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "ctt_expo"
+        }
+      ]
+    },
+    {
+      "id": "ctt_website",
+      "type": "message",
+      "description": "Сайт CTT Expo",
+      "content": {
+        "ru": {
+          "text": "Сайт выставки CTT Expo",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Перейти на сайт",
+              "url": "https://ctt-expo.ru/"
+            }
+          ]
+        },
+        "en": {
+          "text": "CTT Expo exhibition website",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Go to website",
+              "url": "https://ctt-expo.ru/"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "ctt_expo"
+        }
+      ]
+    },
+    {
+      "id": "cto_expo",
+      "type": "menu",
+      "description": "Меню CTO Expo",
+      "content": {
+        "ru": {
+          "text": "CTO Expo:",
+          "format": "plain"
+        },
+        "en": {
+          "text": "CTO Expo:",
+          "format": "plain"
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Получить билет", "en": "Get ticket" },
+          "target_node_id": "cto_ticket"
+        },
+        {
+          "label": { "ru": "Список участников", "en": "List of participants" },
+          "target_node_id": "cto_participants"
+        },
+        {
+          "label": { "ru": "Деловая программа", "en": "Business program" },
+          "target_node_id": "cto_program"
+        },
+        {
+          "label": { "ru": "Сайт", "en": "Website" },
+          "target_node_id": "cto_website"
+        },
+        {
+          "label": { "ru": "В главное меню", "en": "Back to main menu" },
+          "target_node_id": "back_to_main"
+        }
+      ]
+    },
+    {
+      "id": "cto_ticket",
+      "type": "message",
+      "description": "Билет CTO Expo",
+      "content": {
+        "ru": {
+          "text": "Получить билет на CTO Expo",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Получить билет",
+              "url": "https://cto-expo.ru/registration?payed_promocode=TGCTE"
+            }
+          ]
+        },
+        "en": {
+          "text": "Get ticket for CTO Expo",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Get ticket",
+              "url": "https://cto-expo.ru/registration?payed_promocode=TGCTE"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "cto_expo"
+        }
+      ]
+    },
+    {
+      "id": "cto_participants",
+      "type": "message",
+      "description": "Список участников CTO Expo",
+      "content": {
+        "ru": {
+          "text": "Список участников CTO Expo",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Список участников",
+              "url": "https://catalog.cto-expo.ru/expositions/exposition/5873"
+            }
+          ]
+        },
+        "en": {
+          "text": "List of CTO Expo participants",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "List of participants",
+              "url": "https://catalog.cto-expo.ru/expositions/exposition/5873"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "cto_expo"
+        }
+      ]
+    },
+    {
+      "id": "cto_program",
+      "type": "message",
+      "description": "Деловая программа CTO Expo",
+      "content": {
+        "ru": {
+          "text": "Деловая программа CTO Expo",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Деловая программа",
+              "url": "https://cto-expo.ru/"
+            }
+          ]
+        },
+        "en": {
+          "text": "CTO Expo business program",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Business program",
+              "url": "https://cto-expo.ru/"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "cto_expo"
+        }
+      ]
+    },
+    {
+      "id": "cto_website",
+      "type": "message",
+      "description": "Сайт CTO Expo",
+      "content": {
+        "ru": {
+          "text": "Сайт выставки CTO Expo",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Перейти на сайт",
+              "url": "https://cto-expo.ru/"
+            }
+          ]
+        },
+        "en": {
+          "text": "CTO Expo exhibition website",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Go to website",
+              "url": "https://cto-expo.ru/"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "cto_expo"
+        }
+      ]
+    },
+    {
+      "id": "logistika_expo",
+      "type": "menu",
+      "description": "Меню Logistika Expo",
+      "content": {
+        "ru": {
+          "text": "Logistika Expo:",
+          "format": "plain"
+        },
+        "en": {
+          "text": "Logistika Expo:",
+          "format": "plain"
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Получить билет", "en": "Get ticket" },
+          "target_node_id": "logistika_ticket"
+        },
+        {
+          "label": { "ru": "Список участников", "en": "List of participants" },
+          "target_node_id": "logistika_participants"
+        },
+        {
+          "label": { "ru": "Деловая программа", "en": "Business program" },
+          "target_node_id": "logistika_program"
+        },
+        {
+          "label": { "ru": "Сайт", "en": "Website" },
+          "target_node_id": "logistika_website"
+        },
+        {
+          "label": { "ru": "В главное меню", "en": "Back to main menu" },
+          "target_node_id": "back_to_main"
+        }
+      ]
+    },
+    {
+      "id": "logistika_ticket",
+      "type": "message",
+      "description": "Билет Logistika Expo",
+      "content": {
+        "ru": {
+          "text": "Получить билет на Logistika Expo",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Получить билет",
+              "url": "https://logistika-expo.ru/registration?payed_promocode=TGLG"
+            }
+          ]
+        },
+        "en": {
+          "text": "Get ticket for Logistika Expo",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Get ticket",
+              "url": "https://logistika-expo.ru/registration?payed_promocode=TGLG"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "logistika_expo"
+        }
+      ]
+    },
+    {
+      "id": "logistika_participants",
+      "type": "message",
+      "description": "Список участников Logistika Expo",
+      "content": {
+        "ru": {
+          "text": "Список участников Logistika Expo",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Список участников",
+              "url": "https://catalog.logistika-expo.ru/expositions/exposition/5870"
+            }
+          ]
+        },
+        "en": {
+          "text": "List of Logistika Expo participants",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "List of participants",
+              "url": "https://catalog.logistika-expo.ru/expositions/exposition/5870"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "logistika_expo"
+        }
+      ]
+    },
+    {
+      "id": "logistika_program",
+      "type": "message",
+      "description": "Деловая программа Logistika Expo",
+      "content": {
+        "ru": {
+          "text": "Деловая программа Logistika Expo",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Деловая программа",
+              "url": "https://www.logistika-expo.ru/business-program"
+            }
+          ]
+        },
+        "en": {
+          "text": "Logistika Expo business program",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Business program",
+              "url": "https://www.logistika-expo.ru/business-program"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "logistika_expo"
+        }
+      ]
+    },
+    {
+      "id": "logistika_website",
+      "type": "message",
+      "description": "Сайт Logistika Expo",
+      "content": {
+        "ru": {
+          "text": "Сайт выставки Logistika Expo",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Перейти на сайт",
+              "url": "https://logistika-expo.ru/"
+            }
+          ]
+        },
+        "en": {
+          "text": "Logistika Expo exhibition website",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Go to website",
+              "url": "https://logistika-expo.ru/"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "logistika_expo"
+        }
+      ]
+    },
+    {
+      "id": "map",
+      "type": "message",
+      "description": "Карта экспозиции",
+      "content": {
+        "ru": {
+          "text": "Ознакомьтесь с планом синергии EXPO ⬆️",
+          "format": "plain",
+          "attachments": [
+            { "type": "image", "url": "https://disk.yandex.ru/i/SlXJbutQuJqUlg" }
+          ]
+        },
+        "en": {
+          "text": "Check out the EXPO synergy plan ⬆️",
+          "format": "plain",
+          "attachments": [
+            { "type": "image", "url": "https://disk.yandex.ru/i/SlXJbutQuJqUlg" }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "В главное меню", "en": "Back to main menu" },
+          "target_node_id": "welcome"
+        }
+      ]
+    },
+    {
+      "id": "directions",
+      "type": "message",
+      "description": "Маршрут проезда",
+      "content": {
+        "ru": {
+          "text": "Адрес\nМВЦ «Крокус Экспо». [Московская область, Красногорский район, г. Красногорск, ул. Международная, д. 16.](https://yandex.ru/maps/org/krokus_ekspo/217018167012/)\n\nПарковка для автомобиля\nОбращаем внимание, что на территории МВЦ \"Крокус Экспо\" и прилегающих к нему территориях будет ограниченное количество мест для парковок.\nДля сохранения вашего времени и комфортного посещения выставок настоятельно РЕКОМЕНДУЕМ пользоваться метро, такси и перехватывающими парковками.\n\nНа метро\nМетро «Мякинино» (Арбатско-Покровская «синяя» линия).\nВыход №2, первый вагон из центра в сторону Павильона 2.\n\nИз аэропорта\nДо города можно добраться из любого аэропорта на Аэроэкспрессе. Подробнее: [aeroexpress.ru.](https://aeroexpress.ru/)",
+          "format": "markdown",
+          "attachments": [
+            { "type": "location", "lat": 55.824700, "lon": 37.385364 }
+          ]
+        },
+        "en": {
+          "text": "Address\nCrocus Expo IEC. [Moscow region, Krasnogorsk district, Krasnogorsk, Mezhdunarodnaya st., 16.](https://yandex.ru/maps/org/krokus_ekspo/217018167012/)\n\nParking\nPlease note that there will be a limited number of parking spaces on the territory of the Crocus Expo IEC and adjacent territories.\nTo save your time and comfortable visit to the exhibitions, we strongly RECOMMEND using the metro, taxi and intercepting parking lots.\n\nBy metro\nMyakinino metro station (Arbatsko-Pokrovskaya \"blue\" line).\nExit #2, first car from the center towards Pavilion 2.\n\nFrom the airport\nYou can get to the city from any airport by Aeroexpress. Details: [aeroexpress.ru.](https://aeroexpress.ru/)",
+          "format": "markdown",
+          "attachments": [
+            { "type": "location", "lat": 55.824700, "lon": 37.385364 }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "В главное меню", "en": "Back to main menu" },
+          "target_node_id": "welcome"
+        }
+      ]
+    },
+    {
+      "id": "promo",
+      "type": "message",
+      "description": "Промокод для билета",
+      "content": {
+        "ru": {
+          "text": "📌Ваш промокод для бесплатного билета на любую из выставок: tgEXPO. Его можно использовать неограниченное количество раз, делитесь с коллегами! Ссылка на регистрацию: [sigma-expo.ru/expo](http://sigma-expo.ru/expo)",
+          "format": "markdown"
+        },
+        "en": {
+          "text": "📌Your promo code for a free ticket to any of the exhibitions: tgEXPO. It can be used an unlimited number of times, share with colleagues! Registration link: [sigma-expo.ru/expo](http://sigma-expo.ru/expo)",
+          "format": "markdown"
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "В главное меню", "en": "Back to main menu" },
+          "target_node_id": "welcome"
+        }
+      ]
+    },
+    {
+      "id": "back_to_main",
+      "type": "system",
+      "description": "Возврат в главное меню",
+      "actions": [
+        {
+          "type": "go_back",
+          "target_node_id": "welcome"
+        }
+      ]
+    },
+    {
+      "id": "competitions",
+      "type": "menu",
+      "description": "Отраслевые конкурсы",
+      "content": {
+        "ru": {
+          "text": "Выберите конкурс, который вас интересует:",
+          "format": "plain"
+        },
+        "en": {
+          "text": "Choose the competition you are interested in:",
+          "format": "plain"
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Конкурс «Лучший коммерческий автомобиль года в России»", "en": "Best Commercial Vehicle of the Year in Russia" },
+          "target_node_id": "best_comvehicle"
+        },
+        {
+          "label": { "ru": "Конкурс «Инновации в строительной технике в России»", "en": "Innovations in Construction Equipment in Russia" },
+          "target_node_id": "construction_innovation"
+        },
+        {
+          "label": { "ru": "Конкурс «Автопарк года»", "en": "Fleet of the Year" },
+          "target_node_id": "autopark_goda"
+        },
+        {
+          "label": { "ru": "В главное меню", "en": "Back to main menu" },
+          "target_node_id": "welcome"
+        }
+      ]
+    },
+    {
+      "id": "best_comvehicle",
+      "type": "message",
+      "description": "Конкурс «Лучший коммерческий автомобиль года в России»",
+      "content": {
+        "ru": {
+          "text": "Конкурс «Лучший коммерческий автомобиль года в России»",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Перейти на сайт конкурса",
+              "url": "https://www.best-comvehicle.ru/"
+            }
+          ]
+        },
+        "en": {
+          "text": "Best Commercial Vehicle of the Year in Russia",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Go to competition website",
+              "url": "https://www.best-comvehicle.ru/"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "competitions"
+        }
+      ]
+    },
+    {
+      "id": "construction_innovation",
+      "type": "message",
+      "description": "Конкурс «Инновации в строительной технике в России»",
+      "content": {
+        "ru": {
+          "text": "Конкурс «Инновации в строительной технике в России»",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Перейти на сайт конкурса",
+              "url": "https://construction-innovation.ru/"
+            }
+          ]
+        },
+        "en": {
+          "text": "Innovations in Construction Equipment in Russia",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Go to competition website",
+              "url": "https://construction-innovation.ru/"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "competitions"
+        }
+      ]
+    },
+    {
+      "id": "autopark_goda",
+      "type": "message",
+      "description": "Конкурс «Автопарк года»",
+      "content": {
+        "ru": {
+          "text": "Конкурс «Автопарк года»",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Перейти на сайт конкурса",
+              "url": "https://autopark-goda.ru/"
+            }
+          ]
+        },
+        "en": {
+          "text": "Fleet of the Year",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Go to competition website",
+              "url": "https://autopark-goda.ru/"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "competitions"
+        }
+      ]
+    },
+    {
+      "id": "magazines",
+      "type": "menu",
+      "description": "Отраслевые журналы",
+      "content": {
+        "ru": {
+          "text": "Выберите журнал, который вас интересует:",
+          "format": "plain"
+        },
+        "en": {
+          "text": "Choose the magazine you are interested in:",
+          "format": "plain"
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "CTT Digest", "en": "CTT Digest" },
+          "target_node_id": "ctt_digest"
+        },
+        {
+          "label": { "ru": "Журнал «COMVEX ревю»", "en": "COMVEX Review Magazine" },
+          "target_node_id": "comvex_review"
+        },
+        {
+          "label": { "ru": "В главное меню", "en": "Back to main menu" },
+          "target_node_id": "welcome"
+        }
+      ]
+    },
+    {
+      "id": "ctt_digest",
+      "type": "message",
+      "description": "CTT Digest",
+      "content": {
+        "ru": {
+          "text": "CTT Digest - отраслевой журнал о строительной технике",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Перейти на сайт журнала",
+              "url": "https://www.ctt-digest.ru/"
+            }
+          ]
+        },
+        "en": {
+          "text": "CTT Digest - industry magazine about construction equipment",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Go to magazine website",
+              "url": "https://www.ctt-digest.ru/"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "magazines"
+        }
+      ]
+    },
+    {
+      "id": "comvex_review",
+      "type": "message",
+      "description": "Журнал «COMVEX ревю»",
+      "content": {
+        "ru": {
+          "text": "Журнал «COMVEX ревю» - отраслевой журнал о коммерческом транспорте",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Перейти на сайт журнала",
+              "url": "https://comvex-review.ru/"
+            }
+          ]
+        },
+        "en": {
+          "text": "COMVEX Review Magazine - industry magazine about commercial vehicles",
+          "format": "plain",
+          "attachments": [
+            {
+              "type": "link",
+              "text": "Go to magazine website",
+              "url": "https://comvex-review.ru/"
+            }
+          ]
+        }
+      },
+      "buttons": [
+        {
+          "label": { "ru": "Назад", "en": "Back" },
+          "target_node_id": "magazines"
+        }
+      ]
+    }
+  ]
+}
