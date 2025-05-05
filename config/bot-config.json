@@ -6,6 +6,10 @@
       "id": "init",
       "type": "system",
       "description": "Инициализация бота",
+      "content": {
+        "ru": "Добро пожаловать в бота синергии отраслевых выставок EXPO!",
+        "en": "Welcome to the EXPO industry exhibitions synergy bot!"
+      },
       "actions": [
         {
           "type": "send_message",

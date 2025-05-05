@@ -1,6 +1,12 @@
 import TelegramBot from 'node-telegram-bot-api';
 import {MenuItem} from './menu';
-import {findMenuItemRecursive, generateKeyboard, getCurrentMenu, sendMessage, sendContentWithAttachments} from './helpers';
+import {
+  findMenuItemRecursive,
+  generateKeyboard,
+  getCurrentMenu,
+  sendContentWithAttachments,
+  sendMessage
+} from './helpers';
 import {BotConfig} from './config-types';
 import {convertConfigToMenu, findNodeById, getUserLanguage} from './config-loader';
 
@@ -40,6 +46,46 @@ function getTextFromConfig(
   return defaultText;
 }
 
+async function extracted(botState: BotState, userId: number, selectedItem: MenuItem, botConfig: BotConfig | null, bot: TelegramBot, chatId: number, menu: MenuItem[]) {
+  if (botState.userMenuState[userId].length > 0) {
+    // Если заголовок содержит "главное меню" (регистронезависимо), сбрасываем в главное меню
+    if (selectedItem.title.toLowerCase().includes('главное меню')) {
+      botState.userMenuState[userId] = [];
+
+      // Получаем текст для главного меню из конфигурации
+      const mainMenuText = botConfig
+        ? getTextFromConfig('welcome', botState.userLanguages[userId] || botConfig.languages[0], botConfig, 'Главное меню:')
+        : 'Главное меню:';
+
+      await bot.sendMessage(chatId, mainMenuText, {
+        reply_markup: {
+          keyboard: generateKeyboard(menu),
+          resize_keyboard: true
+        }
+      });
+      console.log(`Отправлено главное меню пользователю ${chatId}: "${mainMenuText}"`);
+    } else {
+      // Иначе просто возвращаемся на один уровень назад
+      botState.userMenuState[userId].pop();
+      const newMenu = getCurrentMenu(userId, botState.userMenuState, menu);
+
+      // Получаем текст для кнопки "Назад" из конфигурации
+      const backText = botConfig
+        ? getTextFromConfig('back', botState.userLanguages[userId] || botConfig.languages[0], botConfig, 'Назад...')
+        : 'Назад...';
+
+      await bot.sendMessage(chatId, backText, {
+        reply_markup: {
+          keyboard: generateKeyboard(newMenu),
+          resize_keyboard: true
+        }
+      });
+      console.log(`Отправлено сообщение при возврате назад пользователю ${chatId}: "${backText}"`);
+    }
+  }
+  return;
+}
+
 /**
  * Настраивает маршруты и обработчики сообщений для Telegram-бота
  * @param bot Экземпляр Telegram-бота
@@ -60,46 +106,6 @@ export function setupRoutes(
     userMenuState
   };
 
-  // Обработчик для первого взаимодействия пользователя с ботом
-  bot.on('message', async (msg: TelegramBot.Message) => {
-    // Пропускаем команду /start (обрабатывается отдельно)
-    if (msg.text && msg.text.startsWith('/start')) return;
-
-    const chatId = msg.chat.id;
-    const userId = msg.from?.id;
-
-    if (!userId) return;
-
-    // Если пользователь еще не получил приветственное сообщение
-    if (!botState.welcomedUsers.has(userId)) {
-      botState.welcomedUsers.add(userId);
-
-      // Находим узел с приветственным сообщением в конфигурации
-      if (botConfig) {
-        const initNode = findNodeById(botConfig.nodes, 'init');
-        if (initNode && initNode.content) {
-          // Определяем язык пользователя
-          const userLang = msg.from?.language_code 
-            ? getUserLanguage(msg.from.language_code, botConfig.languages) 
-            : botConfig.languages[0];
-
-          // Сохраняем язык пользователя
-          botState.userLanguages[userId] = userLang;
-
-          // Отправляем содержимое из конфигурации
-          if (initNode.content[userLang]) {
-            // @ts-ignore
-            await sendContentWithAttachments(initNode, userLang, bot, chatId);
-          }
-        }
-      } else {
-        // Если конфигурация не загружена, используем значения по умолчанию
-        await bot.sendMessage(chatId, 'Добро пожаловать! Нажмите на кнопку /start для начала работы с ботом');
-        console.log(`Отправлено приветственное сообщение пользователю ${chatId}: "Добро пожаловать! Нажмите на кнопку /start для начала работы с ботом"`);
-      }
-    }
-  });
-
   /**
    * Обработчик команды /start
    * Сбрасывает состояние меню пользователя и отправляет приветственное сообщение
@@ -109,7 +115,6 @@ export function setupRoutes(
     const userId = msg.from?.id;
 
     if (!userId) return;
-
     // Сбрасываем состояние меню пользователя
     botState.userMenuState[userId] = [];
 
@@ -130,7 +135,7 @@ export function setupRoutes(
         // Если у стартового узла есть содержимое, отправляем его
         if (startNode.content && startNode.content[userLang]) {
           // @ts-ignore
-          await sendContentWithAttachments(startNode, userLang, bot, chatId);
+          await sendContentWithAttachments(startNode, startNode.content[userLang], bot, chatId);
         }
 
         // Получаем кнопки из стартового узла
@@ -167,6 +172,7 @@ export function setupRoutes(
       }
     });
     console.log(`Отправлено меню по умолчанию пользователю ${chatId}: "Выберите опцию:"`);
+    return;
   });
 
   /**
@@ -274,7 +280,7 @@ export function setupRoutes(
                     case 'message':
                     case 'menu':
                       // Получаем текст для меню с опциями
-                      const optionsText = targetNode.buttons && targetNode.buttons.length > 0 
+                      const optionsText = targetNode.buttons && targetNode.buttons.length > 0
                         ? getTextFromConfig(
                             targetNode.id,
                             userLang,
@@ -368,7 +374,7 @@ export function setupRoutes(
         }
       }
 
-      // Если не найдено в JSON-конфигурации или если JSON-конфигурация не используется, 
+      // Если не найдено в JSON-конфигурации или если JSON-конфигурация не используется,
       // пытаемся найти рекурсивно во всех меню
       const recursiveItem = findMenuItemRecursive(userText, menu);
 
@@ -435,43 +441,7 @@ export function setupRoutes(
 
         // Обрабатываем действие "назад" для рекурсивно найденных элементов
         if (recursiveItem.action === 'back') {
-          if (botState.userMenuState[userId].length > 0) {
-            // Если заголовок содержит "главное меню" (регистронезависимо), сбрасываем в главное меню
-            if (recursiveItem.title.toLowerCase().includes('главное меню')) {
-              botState.userMenuState[userId] = [];
-
-              // Получаем текст для главного меню из конфигурации
-              const mainMenuText = botConfig 
-                ? getTextFromConfig('welcome', botState.userLanguages[userId] || botConfig.languages[0], botConfig, 'Главное меню:')
-                : 'Главное меню:';
-
-              await bot.sendMessage(chatId, mainMenuText, {
-                reply_markup: {
-                  keyboard: generateKeyboard(menu),
-                  resize_keyboard: true
-                }
-              });
-              console.log(`Отправлено главное меню пользователю ${chatId}: "${mainMenuText}"`);
-            } else {
-              // Иначе просто возвращаемся на один уровень назад
-              botState.userMenuState[userId].pop();
-              const newMenu = getCurrentMenu(userId, botState.userMenuState, menu);
-
-              // Получаем текст для кнопки "Назад" из конфигурации
-              const backText = botConfig 
-                ? getTextFromConfig('back', botState.userLanguages[userId] || botConfig.languages[0], botConfig, 'Назад...')
-                : 'Назад...';
-
-              await bot.sendMessage(chatId, backText, {
-                reply_markup: {
-                  keyboard: generateKeyboard(newMenu),
-                  resize_keyboard: true
-                }
-              });
-              console.log(`Отправлено сообщение при возврате назад пользователю ${chatId}: "${backText}"`);
-            }
-          }
-          return;
+          await extracted(botState, userId, recursiveItem, botConfig, bot, chatId, menu);
         }
       }
 
@@ -479,7 +449,7 @@ export function setupRoutes(
       console.log('Неизвестная опция. Пожалуйста, выберите из меню')
 
       // Получаем текст из конфигурации для неизвестной опции
-      const unknownOptionText = botConfig 
+      const unknownOptionText = botConfig
         ? getTextFromConfig('unknown_option', botState.userLanguages[userId] || botConfig.languages[0], botConfig, 'Неизвестная опция. Пожалуйста, выберите из меню:')
         : 'Неизвестная опция. Пожалуйста, выберите из меню:';
 
@@ -495,81 +465,23 @@ export function setupRoutes(
 
     // Обрабатываем действие "назад"
     if (selectedItem.action === 'back') {
-      if (botState.userMenuState[userId].length > 0) {
-        // Если заголовок содержит "главное меню" (регистронезависимо), сбрасываем в главное меню
-        if (selectedItem.title.toLowerCase().includes('главное меню')) {
-          botState.userMenuState[userId] = [];
-
-          // Получаем текст для главного меню из конфигурации
-          const mainMenuText = botConfig 
-            ? getTextFromConfig('welcome', botState.userLanguages[userId] || botConfig.languages[0], botConfig, 'Главное меню:')
-            : 'Главное меню:';
-
-          await bot.sendMessage(chatId, mainMenuText, {
-            reply_markup: {
-              keyboard: generateKeyboard(menu),
-              resize_keyboard: true
-            }
-          });
-          console.log(`Отправлено главное меню пользователю ${chatId}: "${mainMenuText}"`);
-        } else {
-          // Иначе просто возвращаемся на один уровень назад
-          botState.userMenuState[userId].pop();
-          const newMenu = getCurrentMenu(userId, botState.userMenuState, menu);
-
-          // Получаем текст для кнопки "Назад" из конфигурации
-          const backText = botConfig 
-            ? getTextFromConfig('back', botState.userLanguages[userId] || botConfig.languages[0], botConfig, 'Назад...')
-            : 'Назад...';
-
-          await bot.sendMessage(chatId, backText, {
-            reply_markup: {
-              keyboard: generateKeyboard(newMenu),
-              resize_keyboard: true
-            }
-          });
-          console.log(`Отправлено сообщение при возврате назад пользователю ${chatId}: "${backText}"`);
-        }
-      }
-      return;
+      await extracted(botState, userId, selectedItem, botConfig, bot, chatId, menu);
     }
 
     // Обрабатываем содержимое сообщения
     if (selectedItem.message) {
-      await sendMessage(bot, chatId, selectedItem.message);
+      if (selectedItem.subMenu) {
+        botState.userMenuState[userId].push(selectedItem.title);
+        await sendMessage(bot, chatId, selectedItem.message, selectedItem.subMenu);
+
+      } else {
+        await sendMessage(bot, chatId, selectedItem.message);
+      }
 
       // Если после отправки сообщения нужно также отправить подменю, не делаем return
       if (!selectedItem.subMenu) {
         return;
       }
-    }
-
-    // Обрабатываем подменю
-    if (selectedItem.subMenu) {
-      botState.userMenuState[userId].push(selectedItem.title);
-
-      // Получаем текст для подменю из конфигурации или используем заголовок элемента
-      let message = `${selectedItem.title}:`;
-
-      // Если есть конфигурация, пытаемся найти текст для этого узла
-      if (botConfig) {
-        const userLang = botState.userLanguages[userId] || botConfig.languages[0];
-        // Пытаемся найти узел с таким же ID, как заголовок элемента (в нижнем регистре)
-        const nodeId = selectedItem.title.toLowerCase().replace(/\s+/g, '_');
-        const configText = getTextFromConfig(nodeId, userLang, botConfig, '');
-        if (configText) {
-          message = configText;
-        }
-      }
-
-      await bot.sendMessage(chatId, message, {
-        reply_markup: {
-          keyboard: generateKeyboard(selectedItem.subMenu),
-          resize_keyboard: true
-        }
-      });
-      console.log(`Отправлено подменю пользователю ${chatId}: "${message}"`);
-      return;
     }
   });
 }

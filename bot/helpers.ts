@@ -1,5 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
 import {MenuItem, MessageContent} from './menu';
+import {ContentForLanguage} from "./config-types";
 
 // Function to generate keyboard markup from menu items
 export function generateKeyboard(items: MenuItem[]): TelegramBot.KeyboardButton[][] {
@@ -69,9 +70,14 @@ export function getCurrentMenu(userId: number, userMenuState: Record<number, str
 }
 
 // Function to send a message based on its content type
-export async function sendMessage(bot: TelegramBot, chatId: number, content: string | MessageContent): Promise<void> {
+export async function sendMessage(bot: TelegramBot, chatId: number, content: string | MessageContent, subMenu?: MenuItem[]): Promise<void> {
   if (typeof content === 'string') {
-    await bot.sendMessage(chatId, content);
+    await bot.sendMessage(chatId, content, {
+      reply_markup: {
+        keyboard: generateKeyboard(subMenu || []),
+        resize_keyboard: true
+      }
+    });
     console.log(`Отправлено текстовое сообщение пользователю ${chatId}: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`);
     return;
   }
@@ -128,16 +134,18 @@ export async function sendMessage(bot: TelegramBot, chatId: number, content: str
   } else if (content.text) {
     await bot.sendMessage(chatId, content.text, {
       parse_mode: content.format === 'markdown' ? 'Markdown' :
-        content.format === 'html' ? 'HTML' : undefined
+        content.format === 'html' ? 'HTML' : undefined,
+      reply_markup: {
+        keyboard: generateKeyboard(subMenu || []),
+        resize_keyboard: true
+      }
+
     });
     console.log(`Отправлено текстовое сообщение пользователю ${chatId}: "${content.text.substring(0, 50)}${content.text.length > 50 ? '...' : ''}"`);
   }
 }
 
-export async function sendContentWithAttachments(initNode: Node, userLang: string, bot: TelegramBot, chatId: number) {
-  // @ts-ignore
-  const content = initNode.content[userLang];
-
+export async function sendContentWithAttachments(initNode: Node, content: ContentForLanguage, bot: TelegramBot, chatId: number) {
   // Отправляем текст
   // todo: for ai, need to resolve too similar interface MessageContent and ContentForLanguage
   // @ts-ignore
