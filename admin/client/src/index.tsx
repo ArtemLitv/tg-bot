@@ -30,6 +30,7 @@ const router = createBrowserRouter(
     // Add future flags to opt-in to v7 behavior
     future: {
       v7_relativeSplatPath: true
+      // v7_startTransition flag removed as it's not supported in the current version
     }
   }
 );

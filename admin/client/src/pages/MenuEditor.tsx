@@ -22,7 +22,9 @@ import {
   InputLabel,
   Select,
   MenuItem as MuiMenuItem,
-  SelectChangeEvent
+  SelectChangeEvent,
+  Tabs,
+  Tab
 } from '@mui/material';
 import {
   Save as SaveIcon,
@@ -36,9 +38,12 @@ import {
   Link as LinkIcon,
   Image as ImageIcon,
   LocationOn as LocationIcon,
-  Message as MessageIcon
+  Message as MessageIcon,
+  AccountTree as AccountTreeIcon,
+  List as ListIcon
 } from '@mui/icons-material';
 import { getMenuConfig, updateMenuConfig } from '../services/api';
+import MenuFlowViewer from '../components/MenuFlowViewer';
 
 // Define interfaces for menu items
 interface MessageContent {
@@ -71,8 +76,7 @@ interface DialogState {
 }
 
 const MenuEditor: React.FC = () => {
-  // We use menuString for saving the menu configuration
-  const [menuString, setMenuString] = useState<string>('');
+  // Состояние для хранения конфигурации меню
   const [menuObject, setMenuObject] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
@@ -91,6 +95,9 @@ const MenuEditor: React.FC = () => {
     index: -1
   });
 
+  // Состояние для вкладок (дерево/граф)
+  const [activeTab, setActiveTab] = useState<number>(0);
+
   useEffect(() => {
     fetchMenuConfig();
   }, []);
@@ -101,7 +108,7 @@ const MenuEditor: React.FC = () => {
 
     try {
       const response = await getMenuConfig();
-      setMenuString(response.data.menuString);
+      const menuString = response.data.menuString;
 
       // Convert string to object for the tree view
       try {
@@ -109,16 +116,53 @@ const MenuEditor: React.FC = () => {
         // Use a safer approach to convert JavaScript object notation to valid JSON
         let menuObj;
         try {
-          // Use Function constructor to safely evaluate the JavaScript object
-          // This is safer than eval() and handles complex strings better
-          menuObj = Function('return ' + response.data.menuString)();
+          // Более надежный способ преобразования JavaScript объекта в JSON
+          // Используем функцию для безопасного преобразования
+          const convertJsToJson = (jsString: string): string => {
+            // Создаем временную функцию для безопасного выполнения кода
+            // Это позволит нам использовать JavaScript eval в контролируемой среде
+            try {
+              // Используем Function конструктор вместо eval для большей безопасности
+              const tempFn = new Function(`
+                try {
+                  const obj = ${jsString};
+                  return JSON.stringify(obj);
+                } catch (e) {
+                  throw new Error('Invalid JavaScript object: ' + e.message);
+                }
+              `);
+
+              return tempFn();
+            } catch (error) {
+              console.error('Error converting JS to JSON:', error);
+
+              // Если не удалось использовать Function, пробуем регулярные выражения
+              // 1. Заменяем одинарные кавычки на двойные
+              let jsonString = jsString.replace(/'/g, '"');
+
+              // 2. Добавляем кавычки вокруг ключей объектов
+              jsonString = jsonString.replace(/([{,]\s*)([a-zA-Z0-9_$]+)\s*:/g, '$1"$2":');
+
+              // 3. Обрабатываем возможные проблемы с запятыми и закрывающими скобками
+              jsonString = jsonString.replace(/,\s*}/g, '}');
+
+              return jsonString;
+            }
+          };
+
+          // Преобразуем строку JavaScript в валидный JSON
+          const jsonString = convertJsToJson(menuString);
+          console.log('Processed JSON string:', jsonString);
+
+          // Парсим JSON
+          menuObj = JSON.parse(jsonString);
 
           // Validate that we got an array
           if (!Array.isArray(menuObj)) {
             throw new Error('Menu configuration is not an array');
           }
-        } catch (evalError) {
-          console.error('Failed to evaluate menu string:', evalError);
+        } catch (parseError) {
+          console.error('Failed to parse menu string:', parseError);
           throw new Error('Failed to parse menu configuration');
         }
         setMenuObject(menuObj);
@@ -175,7 +219,6 @@ const MenuEditor: React.FC = () => {
     try {
       // Convert the menu object to a string
       const menuStr = menuObjectToString(menuObject);
-      setMenuString(menuStr);
 
       await updateMenuConfig({ menuString: menuStr });
       setSuccess('Menu configuration updated successfully');
@@ -630,6 +673,18 @@ const MenuEditor: React.FC = () => {
 
         <Divider sx={{ mb: 2 }} />
 
+        {/* Вкладки для переключения между деревом и графом */}
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+          <Tabs 
+            value={activeTab} 
+            onChange={(_, newValue) => setActiveTab(newValue)}
+            aria-label="menu view tabs"
+          >
+            <Tab icon={<ListIcon />} label="Дерево" />
+            <Tab icon={<AccountTreeIcon />} label="Граф" />
+          </Tabs>
+        </Box>
+
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
             <CircularProgress />
@@ -647,17 +702,27 @@ const MenuEditor: React.FC = () => {
               </Button>
             </Paper>
 
-            <List>
-              {menuObject.map((item, index) => (
-                <MenuItemNode
-                  key={`${index}`}
-                  item={item}
-                  path={`${index}`}
-                  parentItems={null}
-                  index={index}
-                />
-              ))}
-            </List>
+            {/* Отображение в виде дерева */}
+            {activeTab === 0 && (
+              <List>
+                {menuObject.map((item, index) => (
+                  <MenuItemNode
+                    key={`${index}`}
+                    item={item}
+                    path={`${index}`}
+                    parentItems={null}
+                    index={index}
+                  />
+                ))}
+              </List>
+            )}
+
+            {/* Отображение в виде графа */}
+            {activeTab === 1 && (
+              <Box sx={{ mt: 2 }}>
+                <MenuFlowViewer menu={menuObject} />
+              </Box>
+            )}
           </Box>
         ) : (
           <Alert severity="warning">

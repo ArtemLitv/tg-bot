@@ -33,7 +33,8 @@
     "react-router-dom": "^6.14.2",
     "react-scripts": "5.0.1",
     "socket.io": "^4.7.2",
-    "socket.io-client": "^4.7.2"
+    "socket.io-client": "^4.7.2",
+    "reactflow": "^11.10.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",
