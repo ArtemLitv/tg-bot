@@ -1,8 +1,8 @@
 import TelegramBot from 'node-telegram-bot-api';
 import {MenuItem} from './menu';
-import {generateKeyboard, getCurrentMenu, sendMessage, findMenuItemRecursive} from './helpers';
-import {BotConfig, Node} from './config-types';
-import {getUserLanguage, findNodeById, convertConfigToMenu} from './config-loader';
+import {findMenuItemRecursive, generateKeyboard, getCurrentMenu, sendMessage, sendContentWithAttachments} from './helpers';
+import {BotConfig} from './config-types';
+import {convertConfigToMenu, findNodeById, getUserLanguage} from './config-loader';
 
 /**
  * Интерфейс для хранения состояния бота
@@ -88,38 +88,8 @@ export function setupRoutes(
 
           // Отправляем содержимое из конфигурации
           if (initNode.content[userLang]) {
-            const content = initNode.content[userLang];
-
-            // Отправляем текст
-            if (content.text) {
-              await bot.sendMessage(chatId, content.text, {
-                parse_mode: content.format === 'markdown' ? 'Markdown' :
-                  content.format === 'html' ? 'HTML' : undefined
-              });
-              console.log(`Отправлено текстовое сообщение пользователю ${chatId}: "${content.text.substring(0, 50)}${content.text.length > 50 ? '...' : ''}"`);
-            }
-
-            // Отправляем вложения
-            if (content.attachments && content.attachments.length > 0) {
-              for (const attachment of content.attachments) {
-                switch (attachment.type) {
-                  case 'image':
-                    await bot.sendPhoto(chatId, attachment.url);
-                    console.log(`Отправлено фото пользователю ${chatId}: ${attachment.url}`);
-                    break;
-                  case 'link':
-                    await bot.sendMessage(chatId, `[${attachment.text}](${attachment.url})`, {
-                      parse_mode: 'Markdown'
-                    });
-                    console.log(`Отправлена ссылка пользователю ${chatId}: ${attachment.text} (${attachment.url})`);
-                    break;
-                  case 'location':
-                    await bot.sendLocation(chatId, attachment.lat, attachment.lon);
-                    console.log(`Отправлена геолокация пользователю ${chatId}: ${attachment.lat}, ${attachment.lon}`);
-                    break;
-                }
-              }
-            }
+            // @ts-ignore
+            await sendContentWithAttachments(initNode, userLang, bot, chatId);
           }
         }
       } else {
@@ -159,38 +129,8 @@ export function setupRoutes(
 
         // Если у стартового узла есть содержимое, отправляем его
         if (startNode.content && startNode.content[userLang]) {
-          const content = startNode.content[userLang];
-
-          // Отправляем текст, если он доступен
-          if (content.text) {
-            await bot.sendMessage(chatId, content.text, {
-              parse_mode: content.format === 'markdown' ? 'Markdown' :
-                content.format === 'html' ? 'HTML' : undefined
-            });
-            console.log(`Отправлено текстовое сообщение пользователю ${chatId}: "${content.text.substring(0, 50)}${content.text.length > 50 ? '...' : ''}"`);
-          }
-
-          // Отправляем вложения, если они доступны
-          if (content.attachments && content.attachments.length > 0) {
-            for (const attachment of content.attachments) {
-              switch (attachment.type) {
-                case 'image':
-                  await bot.sendPhoto(chatId, attachment.url);
-                  console.log(`Отправлено фото пользователю ${chatId}: ${attachment.url}`);
-                  break;
-                case 'link':
-                  await bot.sendMessage(chatId, `[${attachment.text}](${attachment.url})`, {
-                    parse_mode: 'Markdown'
-                  });
-                  console.log(`Отправлена ссылка пользователю ${chatId}: ${attachment.text} (${attachment.url})`);
-                  break;
-                case 'location':
-                  await bot.sendLocation(chatId, attachment.lat, attachment.lon);
-                  console.log(`Отправлена геолокация пользователю ${chatId}: ${attachment.lat}, ${attachment.lon}`);
-                  break;
-              }
-            }
-          }
+          // @ts-ignore
+          await sendContentWithAttachments(startNode, userLang, bot, chatId);
         }
 
         // Получаем кнопки из стартового узла
@@ -345,39 +285,8 @@ export function setupRoutes(
 
                       // Проверяем, есть ли содержимое
                       if (targetNode.content && targetNode.content[userLang]) {
-                        const content = targetNode.content[userLang];
-
-                        // Отправляем текст, только если он отличается от текста меню с опциями
-                        // или если нет кнопок
-                        if (content.text && (content.text !== optionsText || !targetNode.buttons || targetNode.buttons.length === 0)) {
-                          await bot.sendMessage(chatId, content.text, {
-                            parse_mode: content.format === 'markdown' ? 'Markdown' :
-                              content.format === 'html' ? 'HTML' : undefined
-                          });
-                          console.log(`Отправлено текстовое сообщение пользователю ${chatId}: "${content.text.substring(0, 50)}${content.text.length > 50 ? '...' : ''}"`);
-                        }
-
-                        // Отправляем вложения
-                        if (content.attachments && content.attachments.length > 0) {
-                          for (const attachment of content.attachments) {
-                            switch (attachment.type) {
-                              case 'image':
-                                await bot.sendPhoto(chatId, attachment.url);
-                                console.log(`Отправлено фото пользователю ${chatId}: ${attachment.url}`);
-                                break;
-                              case 'link':
-                                await bot.sendMessage(chatId, `[${attachment.text}](${attachment.url})`, {
-                                  parse_mode: 'Markdown'
-                                });
-                                console.log(`Отправлена ссылка пользователю ${chatId}: ${attachment.text} (${attachment.url})`);
-                                break;
-                              case 'location':
-                                await bot.sendLocation(chatId, attachment.lat, attachment.lon);
-                                console.log(`Отправлена геолокация пользователю ${chatId}: ${attachment.lat}, ${attachment.lon}`);
-                                break;
-                            }
-                          }
-                        }
+                        // @ts-ignore
+                        await sendContentWithAttachments(targetNode, userLang, bot, chatId);
                       }
 
                       // Отправляем кнопки, если они доступны
@@ -443,10 +352,9 @@ export function setupRoutes(
                           const nextNode = findNodeById(botConfig.nodes, targetNode.next!);
                           if (nextNode && nextNode.content && nextNode.content[userLang]) {
                             const content = nextNode.content[userLang];
-                            if (content.text) {
-                              await bot.sendMessage(chatId, content.text);
-                              console.log(`Отправлено отложенное сообщение пользователю ${chatId}: "${content.text.substring(0, 50)}${content.text.length > 50 ? '...' : ''}"`);
-                            }
+                            // todo: for ai, need to resolve too similar interface MessageContent and ContentForLanguage
+                            // @ts-ignore
+                            await sendMessage(content, bot, chatId);
                           }
                         }, targetNode.duration);
                         return;
@@ -514,7 +422,7 @@ export function setupRoutes(
               }
             }
 
-            bot.sendMessage(chatId, message, {
+            await bot.sendMessage(chatId, message, {
               reply_markup: {
                 keyboard: generateKeyboard(recursiveItem.subMenu),
                 resize_keyboard: true
@@ -537,7 +445,7 @@ export function setupRoutes(
                 ? getTextFromConfig('welcome', botState.userLanguages[userId] || botConfig.languages[0], botConfig, 'Главное меню:')
                 : 'Главное меню:';
 
-              bot.sendMessage(chatId, mainMenuText, {
+              await bot.sendMessage(chatId, mainMenuText, {
                 reply_markup: {
                   keyboard: generateKeyboard(menu),
                   resize_keyboard: true
@@ -554,7 +462,7 @@ export function setupRoutes(
                 ? getTextFromConfig('back', botState.userLanguages[userId] || botConfig.languages[0], botConfig, 'Назад...')
                 : 'Назад...';
 
-              bot.sendMessage(chatId, backText, {
+              await bot.sendMessage(chatId, backText, {
                 reply_markup: {
                   keyboard: generateKeyboard(newMenu),
                   resize_keyboard: true
@@ -575,7 +483,7 @@ export function setupRoutes(
         ? getTextFromConfig('unknown_option', botState.userLanguages[userId] || botConfig.languages[0], botConfig, 'Неизвестная опция. Пожалуйста, выберите из меню:')
         : 'Неизвестная опция. Пожалуйста, выберите из меню:';
 
-      bot.sendMessage(chatId, unknownOptionText, {
+      await bot.sendMessage(chatId, unknownOptionText, {
         reply_markup: {
           keyboard: generateKeyboard(currentMenu),
           resize_keyboard: true
@@ -597,7 +505,7 @@ export function setupRoutes(
             ? getTextFromConfig('welcome', botState.userLanguages[userId] || botConfig.languages[0], botConfig, 'Главное меню:')
             : 'Главное меню:';
 
-          bot.sendMessage(chatId, mainMenuText, {
+          await bot.sendMessage(chatId, mainMenuText, {
             reply_markup: {
               keyboard: generateKeyboard(menu),
               resize_keyboard: true
@@ -614,7 +522,7 @@ export function setupRoutes(
             ? getTextFromConfig('back', botState.userLanguages[userId] || botConfig.languages[0], botConfig, 'Назад...')
             : 'Назад...';
 
-          bot.sendMessage(chatId, backText, {
+          await bot.sendMessage(chatId, backText, {
             reply_markup: {
               keyboard: generateKeyboard(newMenu),
               resize_keyboard: true
@@ -654,7 +562,7 @@ export function setupRoutes(
         }
       }
 
-      bot.sendMessage(chatId, message, {
+      await bot.sendMessage(chatId, message, {
         reply_markup: {
           keyboard: generateKeyboard(selectedItem.subMenu),
           resize_keyboard: true

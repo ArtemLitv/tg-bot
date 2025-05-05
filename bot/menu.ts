@@ -19,6 +19,7 @@ export interface MessageContent {
     latitude: number;
     longitude: number;
   };
+  format?: 'plain' | 'markdown' | 'html';
 }
 
 // Main menu configuration

@@ -126,8 +126,42 @@ export async function sendMessage(bot: TelegramBot, chatId: number, content: str
       console.log(`Отправлено текстовое сообщение с геолокацией пользователю ${chatId}: "${content.text.substring(0, 50)}${content.text.length > 50 ? '...' : ''}"`);
     }
   } else if (content.text) {
-    // If only text is present
-    await bot.sendMessage(chatId, content.text);
+    await bot.sendMessage(chatId, content.text, {
+      parse_mode: content.format === 'markdown' ? 'Markdown' :
+        content.format === 'html' ? 'HTML' : undefined
+    });
     console.log(`Отправлено текстовое сообщение пользователю ${chatId}: "${content.text.substring(0, 50)}${content.text.length > 50 ? '...' : ''}"`);
+  }
+}
+
+export async function sendContentWithAttachments(initNode: Node, userLang: string, bot: TelegramBot, chatId: number) {
+  // @ts-ignore
+  const content = initNode.content[userLang];
+
+  // Отправляем текст
+  // todo: for ai, need to resolve too similar interface MessageContent and ContentForLanguage
+  // @ts-ignore
+  await sendMessage(content, bot, chatId);
+
+  // Отправляем вложения
+  if (content.attachments && content.attachments.length > 0) {
+    for (const attachment of content.attachments) {
+      switch (attachment.type) {
+        case 'image':
+          await bot.sendPhoto(chatId, attachment.url);
+          console.log(`Отправлено фото пользователю ${chatId}: ${attachment.url}`);
+          break;
+        case 'link':
+          await bot.sendMessage(chatId, `[${attachment.text}](${attachment.url})`, {
+            parse_mode: 'Markdown'
+          });
+          console.log(`Отправлена ссылка пользователю ${chatId}: ${attachment.text} (${attachment.url})`);
+          break;
+        case 'location':
+          await bot.sendLocation(chatId, attachment.lat, attachment.lon);
+          console.log(`Отправлена геолокация пользователю ${chatId}: ${attachment.lat}, ${attachment.lon}`);
+          break;
+      }
+    }
   }
 }
