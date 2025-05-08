@@ -141,17 +141,6 @@ function App() {
     setEdges((eds) => addEdge(params, eds));
   }, [setEdges]);
 
-  // Функция для перекомпоновки графа
-  const onLayout = useCallback((direction) => {
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-      nodes,
-      edges,
-      direction
-    );
-
-    setNodes([...layoutedNodes]);
-    setEdges([...layoutedEdges]);
-  }, [nodes, edges, setNodes, setEdges]);
 
   if (isLoading) {
     return <div>Загрузка конфигурации...</div>;
@@ -163,14 +152,6 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="layout-buttons">
-        <button className="layout-button" onClick={() => onLayout('TB')}>
-          Компоновка сверху вниз
-        </button>
-        <button className="layout-button" onClick={() => onLayout('LR')}>
-          Компоновка слева направо
-        </button>
-      </div>
       <div className="flow-container">
         <ReactFlow
           nodes={nodes}
