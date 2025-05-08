@@ -19,7 +19,7 @@ export class Bot {
   private config: BotConfig;
   private nodeHandlers: NodeHandler[] = [];
   private userContexts: Map<number, UserContext> = new Map();
-  private inputHandler: InputNodeHandler;
+  private inputHandler!: InputNodeHandler;
 
   /**
    * Конструктор
@@ -29,14 +29,14 @@ export class Bot {
   constructor(token: string, configPath: string) {
     // Инициализируем бота
     this.bot = new Telegraf(token);
-    
+
     // Загружаем конфигурацию
     this.config = loadConfig(configPath);
     logInfo('Конфигурация загружена', { startNodeId: this.config.start_node_id });
-    
+
     // Инициализируем обработчики узлов
     this.initNodeHandlers();
-    
+
     // Настраиваем обработчики команд и сообщений
     this.setupHandlers();
   }
@@ -49,12 +49,12 @@ export class Bot {
     const messageHandler = new MessageNodeHandler();
     const menuHandler = new MenuNodeHandler();
     const locationHandler = new LocationNodeHandler();
-    
+
     // Создаем обработчики, которым нужна конфигурация и другие обработчики
     this.inputHandler = new InputNodeHandler(this.config, []);
     const systemHandler = new SystemNodeHandler(this.config, []);
     const delayHandler = new DelayNodeHandler(this.config, []);
-    
+
     // Добавляем обработчики в массив
     this.nodeHandlers = [
       messageHandler,
@@ -64,12 +64,12 @@ export class Bot {
       locationHandler,
       delayHandler
     ];
-    
+
     // Обновляем ссылки на массив обработчиков
     (systemHandler as any).nodeHandlers = this.nodeHandlers;
     (this.inputHandler as any).nodeHandlers = this.nodeHandlers;
     (delayHandler as any).nodeHandlers = this.nodeHandlers;
-    
+
     logInfo('Обработчики узлов инициализированы');
   }
 
@@ -81,52 +81,52 @@ export class Bot {
     this.bot.start(async (ctx) => {
       await this.handleStart(ctx);
     });
-    
+
     // Обработчик команды /help
     this.bot.help(async (ctx) => {
       await ctx.reply('Используйте команду /start для начала работы с ботом.');
     });
-    
+
     // Обработчик команды /reset
     this.bot.command('reset', async (ctx) => {
       const userId = getUserId(ctx);
       this.userContexts.delete(userId);
       await ctx.reply('Ваша сессия сброшена. Используйте /start для начала работы с ботом.');
     });
-    
+
     // Обработчик текстовых сообщений
     this.bot.on('text', async (ctx) => {
       await this.handleMessage(ctx, ctx.message.text);
     });
-    
+
     // Обработчик местоположений
     this.bot.on('location', async (ctx) => {
       await this.handleMessage(ctx, ctx.message.location);
     });
-    
+
     // Обработчик колбэков от кнопок
     this.bot.on('callback_query', async (ctx) => {
-      if (!ctx.callbackQuery.data) {
+      if (!('data' in ctx.callbackQuery) || !ctx.callbackQuery.data) {
         return;
       }
-      
+
       const data = ctx.callbackQuery.data;
-      
+
       // Если это переход к узлу
       if (data.startsWith('node:')) {
         const nodeId = data.substring(5);
         await this.handleNodeTransition(ctx, nodeId);
       }
-      
+
       // Отвечаем на колбэк, чтобы убрать "часики" на кнопке
       await ctx.answerCbQuery();
     });
-    
+
     // Обработчик ошибок
     this.bot.catch((err, ctx) => {
       logError('Ошибка при обработке обновления', { error: err, update: ctx.update });
     });
-    
+
     logInfo('Обработчики команд и сообщений настроены');
   }
 
@@ -137,7 +137,7 @@ export class Bot {
   private async handleStart(ctx: Context): Promise<void> {
     const userId = getUserId(ctx);
     const chatId = getChatId(ctx);
-    
+
     // Создаем новый контекст пользователя
     const userContext: UserContext = {
       userId,
@@ -146,10 +146,10 @@ export class Bot {
       language: this.config.languages[0], // Используем первый язык по умолчанию
       history: []
     };
-    
+
     // Сохраняем контекст пользователя
     this.userContexts.set(userId, userContext);
-    
+
     // Находим начальный узел
     const startNode = findNodeById(this.config, this.config.start_node_id);
     if (!startNode) {
@@ -157,10 +157,10 @@ export class Bot {
       await ctx.reply('Ошибка конфигурации бота. Начальный узел не найден.');
       return;
     }
-    
+
     // Обрабатываем начальный узел
     await this.processNode(ctx, startNode, userContext);
-    
+
     logInfo('Пользователь начал работу с ботом', { userId, chatId });
   }
 
@@ -171,20 +171,20 @@ export class Bot {
    */
   private async handleMessage(ctx: Context, message: any): Promise<void> {
     const userId = getUserId(ctx);
-    
+
     // Получаем контекст пользователя
     const userContext = this.userContexts.get(userId);
     if (!userContext) {
       await ctx.reply('Пожалуйста, используйте команду /start для начала работы с ботом.');
       return;
     }
-    
+
     // Если пользователь находится в режиме ввода
     if (userContext.inputState) {
       await this.inputHandler.handleInput(ctx, userContext, message);
       return;
     }
-    
+
     // Если это текстовое сообщение, проверяем, есть ли узел с таким ID
     if (typeof message === 'string') {
       const targetNode = findNodeById(this.config, message);
@@ -192,7 +192,7 @@ export class Bot {
         await this.processNode(ctx, targetNode, userContext);
         return;
       }
-      
+
       // Проверяем, есть ли кнопка с таким текстом в текущем узле
       const currentNode = findNodeById(this.config, userContext.currentNodeId);
       if (currentNode && 'buttons' in currentNode && currentNode.buttons) {
@@ -200,14 +200,14 @@ export class Bot {
           b.label[userContext.language] === message || 
           Object.values(b.label).includes(message)
         );
-        
+
         if (button) {
           await this.handleNodeTransition(ctx, button.target_node_id);
           return;
         }
       }
     }
-    
+
     // Если не нашли подходящий узел или кнопку
     await ctx.reply('Неизвестная команда');
   }
@@ -219,21 +219,21 @@ export class Bot {
    */
   private async handleNodeTransition(ctx: Context, nodeId: string): Promise<void> {
     const userId = getUserId(ctx);
-    
+
     // Получаем контекст пользователя
     const userContext = this.userContexts.get(userId);
     if (!userContext) {
       await ctx.reply('Пожалуйста, используйте команду /start для начала работы с ботом.');
       return;
     }
-    
+
     // Находим узел
     const targetNode = findNodeById(this.config, nodeId);
     if (!targetNode) {
       await ctx.reply('Неизвестная команда');
       return;
     }
-    
+
     // Обрабатываем узел
     await this.processNode(ctx, targetNode, userContext);
   }
@@ -252,7 +252,7 @@ export class Bot {
       await ctx.reply(`Ошибка: не найден обработчик для узла типа ${node.type}`);
       return;
     }
-    
+
     try {
       // Обрабатываем узел
       await handler.handle(ctx, node, userContext);
@@ -271,7 +271,7 @@ export class Bot {
       // Запускаем бота
       await this.bot.launch();
       logInfo('Бот запущен');
-      
+
       // Обрабатываем остановку бота
       process.once('SIGINT', () => this.stop());
       process.once('SIGTERM', () => this.stop());
