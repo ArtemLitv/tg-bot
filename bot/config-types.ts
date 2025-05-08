@@ -1,34 +1,90 @@
-/**
- * Типы для JSON-конфигурации Telegram-бота
- * Этот файл содержит интерфейсы для всех элементов конфигурации
- */
-
-// Поддерживаемые языки
-export type Language = string;
-
-// Мультиязычный текст
-export type MultiLangText = Record<Language, string>;
+// Основная конфигурация бота
+export interface BotConfig {
+  start_node_id: string;
+  languages: string[];
+  nodes: Node[];
+}
 
 // Типы узлов
 export type NodeType = 'message' | 'menu' | 'system' | 'location' | 'input' | 'delay';
 
+// Базовый интерфейс для всех узлов
+export interface BaseNode {
+  id: string;
+  type: NodeType;
+  description?: string;
+}
+
+// Интерфейс для узла сообщения
+export interface MessageNode extends BaseNode {
+  type: 'message';
+  content: Record<string, ContentItem>;
+  buttons?: Button[];
+}
+
+// Интерфейс для узла меню
+export interface MenuNode extends BaseNode {
+  type: 'menu';
+  content: Record<string, ContentItem>;
+  buttons: Button[];
+}
+
+// Интерфейс для системного узла
+export interface SystemNode extends BaseNode {
+  type: 'system';
+  content?: Record<string, string>;
+  actions: Action[];
+}
+
+// Интерфейс для узла местоположения
+export interface LocationNode extends BaseNode {
+  type: 'location';
+  content: Record<string, ContentItem>;
+  buttons?: Button[];
+}
+
+// Интерфейс для узла ввода
+export interface InputNode extends BaseNode {
+  type: 'input';
+  content: Record<string, ContentItem>;
+  input_handler: InputHandler;
+  buttons?: Button[];
+}
+
+// Интерфейс для узла задержки
+export interface DelayNode extends BaseNode {
+  type: 'delay';
+  duration: number;
+  next: string;
+}
+
+// Объединенный тип для всех узлов
+export type Node = MessageNode | MenuNode | SystemNode | LocationNode | InputNode | DelayNode;
+
+// Интерфейс для содержимого узла
+export interface ContentItem {
+  text: string;
+  format?: 'plain' | 'markdown' | 'html';
+  attachments?: Attachment[];
+}
+
 // Типы вложений
 export type AttachmentType = 'image' | 'link' | 'location';
 
-// Интерфейс для изображения
+// Интерфейс для вложения изображения
 export interface ImageAttachment {
   type: 'image';
   url: string;
 }
 
-// Интерфейс для ссылки
+// Интерфейс для вложения ссылки
 export interface LinkAttachment {
   type: 'link';
   text: string;
   url: string;
 }
 
-// Интерфейс для местоположения
+// Интерфейс для вложения местоположения
 export interface LocationAttachment {
   type: 'location';
   lat: number;
@@ -38,54 +94,60 @@ export interface LocationAttachment {
 // Объединенный тип для всех вложений
 export type Attachment = ImageAttachment | LinkAttachment | LocationAttachment;
 
-// Интерфейс для содержимого сообщения на одном языке
-export interface ContentForLanguage {
-  text?: string;
-  format?: 'plain' | 'markdown' | 'html';
-  attachments?: Attachment[];
-}
-
-// Мультиязычное содержимое
-export type MultiLangContent = Record<Language, ContentForLanguage>;
-
 // Интерфейс для кнопки
 export interface Button {
-  label: MultiLangText;
+  label: Record<string, string>;
   target_node_id: string;
 }
 
-// Интерфейс для действия
-export interface Action {
-  type: string;
-  [key: string]: any;
+// Типы действий
+export type ActionType = 'send_message' | 'go_to' | 'go_back';
+
+// Базовый интерфейс для всех действий
+export interface BaseAction {
+  type: ActionType;
 }
+
+// Интерфейс для действия отправки сообщения
+export interface SendMessageAction extends BaseAction {
+  type: 'send_message';
+  content: Record<string, string>;
+}
+
+// Интерфейс для действия перехода к узлу
+export interface GoToAction extends BaseAction {
+  type: 'go_to';
+  target_node_id: string;
+}
+
+// Интерфейс для действия возврата
+export interface GoBackAction extends BaseAction {
+  type: 'go_back';
+  target_node_id?: string;
+}
+
+// Объединенный тип для всех действий
+export type Action = SendMessageAction | GoToAction | GoBackAction;
+
+// Типы обработчиков ввода
+export type InputHandlerType = 'text' | 'location';
 
 // Интерфейс для обработчика ввода
 export interface InputHandler {
-  type: 'text' | 'location';
-  prompt: MultiLangText;
-  on_receive: {
-    type: string;
-    [key: string]: any;
+  type: InputHandlerType;
+  prompt: Record<string, string>;
+  on_receive: Action;
+}
+
+// Интерфейс для контекста пользователя
+export interface UserContext {
+  userId: number;
+  chatId: number;
+  currentNodeId: string;
+  language: string;
+  inputState?: {
+    expectedType: InputHandlerType;
+    handlerId: string;
   };
-}
-
-// Интерфейс для узла
-export interface Node {
-  id: string;
-  type: NodeType;
-  description?: string;
-  content?: MultiLangContent;
-  buttons?: Button[];
-  actions?: Action[];
-  input_handler?: InputHandler;
-  duration?: number; // для узла типа 'delay'
-  next?: string; // для узла типа 'delay'
-}
-
-// Интерфейс для корневой конфигурации
-export interface BotConfig {
-  start_node_id: string;
-  languages: Language[];
-  nodes: Node[];
+  history: string[];
 }
