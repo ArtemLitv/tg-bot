@@ -46,20 +46,18 @@ function getTextFromConfig(
   return defaultText;
 }
 
-async function extracted(botState: BotState, userId: number, selectedItem: MenuItem, botConfig: BotConfig | null, bot: TelegramBot, chatId: number, menu: MenuItem[]) {
+async function extracted(botState: BotState, userId: number, selectedItem: MenuItem, botConfig: BotConfig, bot: TelegramBot, chatId: number, menuItems: MenuItem[]) {
   if (botState.userMenuState[userId].length > 0) {
     // Если заголовок содержит "главное меню" (регистронезависимо), сбрасываем в главное меню
     if (selectedItem.title.toLowerCase().includes('главное меню')) {
       botState.userMenuState[userId] = [];
 
       // Получаем текст для главного меню из конфигурации
-      const mainMenuText = botConfig
-        ? getTextFromConfig('welcome', botState.userLanguages[userId] || botConfig.languages[0], botConfig, 'Главное меню:')
-        : 'Главное меню:';
+      const mainMenuText = getTextFromConfig('welcome', botState.userLanguages[userId] || botConfig.languages[0], botConfig, 'Главное меню:');
 
       await bot.sendMessage(chatId, mainMenuText, {
         reply_markup: {
-          keyboard: generateKeyboard(menu),
+          keyboard: generateKeyboard(menuItems),
           resize_keyboard: true
         }
       });
@@ -67,12 +65,10 @@ async function extracted(botState: BotState, userId: number, selectedItem: MenuI
     } else {
       // Иначе просто возвращаемся на один уровень назад
       botState.userMenuState[userId].pop();
-      const newMenu = getCurrentMenu(userId, botState.userMenuState, menu);
+      const newMenu = getCurrentMenu(userId, botState.userMenuState, menuItems);
 
       // Получаем текст для кнопки "Назад" из конфигурации
-      const backText = botConfig
-        ? getTextFromConfig('back', botState.userLanguages[userId] || botConfig.languages[0], botConfig, 'Назад...')
-        : 'Назад...';
+      const backText = getTextFromConfig('back', botState.userLanguages[userId] || botConfig.languages[0], botConfig, 'Назад...');
 
       await bot.sendMessage(chatId, backText, {
         reply_markup: {
@@ -89,15 +85,15 @@ async function extracted(botState: BotState, userId: number, selectedItem: MenuI
 /**
  * Настраивает маршруты и обработчики сообщений для Telegram-бота
  * @param bot Экземпляр Telegram-бота
- * @param menu Структура меню
+ * @param menuItems Структура меню, полученная из конфигурации
  * @param userMenuState Состояние меню пользователей
- * @param botConfig Конфигурация бота (опционально)
+ * @param botConfig Конфигурация бота
  */
 export function setupRoutes(
   bot: TelegramBot,
-  menu: MenuItem[],
+  menuItems: MenuItem[],
   userMenuState: Record<number, string[]>,
-  botConfig: BotConfig | null = null
+  botConfig: BotConfig
 ): void {
   // Инициализация состояния бота
   const botState: BotState = {
@@ -164,14 +160,9 @@ export function setupRoutes(
       }
     }
 
-    // Если конфигурация не загружена или что-то пошло не так, используем статическое меню
-    await bot.sendMessage(chatId, 'Выберите опцию:', {
-      reply_markup: {
-        keyboard: generateKeyboard(menu),
-        resize_keyboard: true
-      }
-    });
-    console.log(`Отправлено меню по умолчанию пользователю ${chatId}: "Выберите опцию:"`);
+    // Этот блок не должен выполняться, так как botConfig теперь обязательный параметр
+    // и мы всегда должны иметь menuItems из конфигурации
+    console.error('Критическая ошибка: не удалось загрузить меню из конфигурации');
     return;
   });
 
@@ -199,7 +190,7 @@ export function setupRoutes(
     }
 
     // Получаем текущее меню на основе состояния пользователя
-    const currentMenu = getCurrentMenu(userId, botState.userMenuState, menu);
+    const currentMenu = getCurrentMenu(userId, botState.userMenuState, menuItems);
 
     // Логируем полученное сообщение и доступные пункты меню для отладки
     console.log(`Получено сообщение: "${msg.text}"`);
@@ -327,7 +318,7 @@ export function setupRoutes(
 
                             await bot.sendMessage(chatId, backToMainText, {
                               reply_markup: {
-                                keyboard: generateKeyboard(menu),
+                                keyboard: generateKeyboard(menuItems),
                                 resize_keyboard: true
                               }
                             });
@@ -374,9 +365,8 @@ export function setupRoutes(
         }
       }
 
-      // Если не найдено в JSON-конфигурации или если JSON-конфигурация не используется,
-      // пытаемся найти рекурсивно во всех меню
-      const recursiveItem = findMenuItemRecursive(userText, menu);
+      // Если не найдено в JSON-конфигурации, пытаемся найти рекурсивно во всех меню
+      const recursiveItem = findMenuItemRecursive(userText, menuItems);
 
       if (recursiveItem) {
         console.log(`Найден элемент рекурсивно: "${recursiveItem.title}"`);
@@ -408,7 +398,7 @@ export function setupRoutes(
             return null;
           };
 
-          const path = findPath(menu, recursiveItem);
+          const path = findPath(menuItems, recursiveItem);
           if (path) {
             // Устанавливаем состояние меню пользователя на родителя найденного элемента
             botState.userMenuState[userId] = path.slice(0, -1);
@@ -441,7 +431,7 @@ export function setupRoutes(
 
         // Обрабатываем действие "назад" для рекурсивно найденных элементов
         if (recursiveItem.action === 'back') {
-          await extracted(botState, userId, recursiveItem, botConfig, bot, chatId, menu);
+          await extracted(botState, userId, recursiveItem, botConfig, bot, chatId, menuItems);
         }
       }
 
@@ -465,7 +455,7 @@ export function setupRoutes(
 
     // Обрабатываем действие "назад"
     if (selectedItem.action === 'back') {
-      await extracted(botState, userId, selectedItem, botConfig, bot, chatId, menu);
+      await extracted(botState, userId, selectedItem, botConfig, bot, chatId, menuItems);
     }
 
     // Обрабатываем содержимое сообщения
