@@ -200,6 +200,7 @@ const UserHistory = () => {
       headerName: 'Время перехода', 
       width: 200,
       valueGetter: (params) => {
+        if (!params.row || !params.row.timestamp) return 'Не определено';
         const date = new Date(params.row.timestamp);
         return date.toLocaleString('ru-RU');
       }
@@ -233,6 +234,7 @@ const UserHistory = () => {
       headerName: 'Время ввода', 
       width: 200,
       valueGetter: (params) => {
+        if (!params.row || !params.row.timestamp) return 'Не определено';
         const date = new Date(params.row.timestamp);
         return date.toLocaleString('ru-RU');
       }

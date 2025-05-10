@@ -157,13 +157,14 @@ const UserTable = () => {
       field: 'currentNodeId',
       headerName: 'Текущий узел',
       width: 150,
-      valueGetter: (params) => params.row.currentNodeId || 'Не определен'
+      valueGetter: (params) => params.row && params.row.currentNodeId ? params.row.currentNodeId : 'Не определен'
     },
     {
       field: 'lastActivityAt',
       headerName: 'Последняя активность',
       width: 200,
       valueGetter: (params) => {
+        if (!params.row || !params.row.lastActivityAt) return 'Не определено';
         const date = new Date(params.row.lastActivityAt);
         return date.toLocaleString('ru-RU');
       }
@@ -173,6 +174,7 @@ const UserTable = () => {
       headerName: 'Дата регистрации',
       width: 200,
       valueGetter: (params) => {
+        if (!params.row || !params.row.createdAt) return 'Не определено';
         const date = new Date(params.row.createdAt);
         return date.toLocaleString('ru-RU');
       }

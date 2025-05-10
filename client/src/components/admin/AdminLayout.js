@@ -144,7 +144,6 @@ const AdminLayout = () => {
       <List>
         {menuItems.map((item) => (
           <ListItem
-            button
             key={item.text}
             component={Link}
             to={item.path}
@@ -190,7 +189,7 @@ const AdminLayout = () => {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Telegram Bot Admin
           </Typography>
-          
+
           {user && (
             <>
               <Button
@@ -222,7 +221,7 @@ const AdminLayout = () => {
           )}
         </Toolbar>
       </AppBar>
-      
+
       {/* Боковое меню */}
       <Box
         component="nav"
@@ -243,7 +242,7 @@ const AdminLayout = () => {
         >
           {drawer}
         </Drawer>
-        
+
         {/* Десктопное меню */}
         <Drawer
           variant="permanent"
@@ -256,7 +255,7 @@ const AdminLayout = () => {
           {drawer}
         </Drawer>
       </Box>
-      
+
       {/* Основное содержимое */}
       <Box
         component="main"
