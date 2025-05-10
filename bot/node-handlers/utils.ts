@@ -14,6 +14,24 @@ import {
 } from '../config-types';
 
 /**
+ * Экранирует специальные символы для формата MarkdownV2
+ * @param text Текст для экранирования
+ * @returns Экранированный текст
+ */
+function escapeMarkdownV2(text: string): string {
+  // Специальные символы, которые нужно экранировать в MarkdownV2
+  const specialChars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];
+
+  let result = text;
+  for (const char of specialChars) {
+    // Заменяем каждый специальный символ на экранированный вариант
+    result = result.replace(new RegExp('\\' + char, 'g'), '\\' + char);
+  }
+
+  return result;
+}
+
+/**
  * Создает клавиатуру с кнопками
  * @param buttons Массив кнопок
  * @param language Язык пользователя
@@ -43,14 +61,14 @@ export async function sendContent(
 ) {
   // Получаем содержимое для выбранного языка или первый доступный язык
   const contentItem = content[language] || Object.values(content)[0];
-  
+
   if (!contentItem) {
     throw new Error('Не удалось найти содержимое для отправки');
   }
 
   // Создаем клавиатуру, если есть кнопки
   const keyboard = buttons ? createKeyboard(buttons, language) : undefined;
-  
+
   // Если есть вложения, обрабатываем их
   if (contentItem.attachments && contentItem.attachments.length > 0) {
     await handleAttachments(ctx, contentItem.attachments, contentItem.text, contentItem.format, keyboard);
@@ -77,7 +95,7 @@ async function sendFormattedText(
 
   switch (format) {
     case 'markdown':
-      await ctx.replyWithMarkdown(text, options);
+      await ctx.replyWithMarkdownV2(escapeMarkdownV2(text), options);
       break;
     case 'html':
       await ctx.replyWithHTML(text, options);
@@ -89,7 +107,7 @@ async function sendFormattedText(
 }
 
 /**
- * Обрабатывает вложения и отправляет их
+ * Обрабатывает вложения и отправляет их вместе с текстом в одном сообщении
  * @param ctx Контекст Telegraf
  * @param attachments Массив вложений
  * @param text Текст сообщения
@@ -103,19 +121,81 @@ async function handleAttachments(
   format?: string,
   keyboard?: any
 ) {
-  // Сначала отправляем текст, если он есть
-  if (text) {
-    await sendFormattedText(ctx, text, format);
-  }
+  // Находим первое вложение с изображением, если есть
+  const imageAttachment = attachments.find(att => att.type === 'image') as ImageAttachment | undefined;
 
-  // Затем отправляем каждое вложение
-  for (const attachment of attachments) {
-    await sendAttachment(ctx, attachment);
-  }
+  // Максимальная длина подписи в Telegram
+  const MAX_CAPTION_LENGTH = 1024;
 
-  // Если есть клавиатура, отправляем её с последним сообщением
-  if (keyboard) {
-    await ctx.reply('Выберите действие:', keyboard);
+  // Если есть изображение, проверяем длину текста
+  if (imageAttachment) {
+    const options: any = {};
+    let formattedText = text;
+    let textTooLong = false;
+
+    // Форматируем текст, если указан формат
+    if (text) {
+      if (format === 'markdown') {
+        formattedText = escapeMarkdownV2(text);
+        // Проверяем длину после экранирования
+        if (formattedText.length > MAX_CAPTION_LENGTH) {
+          textTooLong = true;
+        } else {
+          options.caption = formattedText;
+          options.parse_mode = 'MarkdownV2';
+        }
+      } else if (format === 'html') {
+        // Проверяем длину текста
+        if (text.length > MAX_CAPTION_LENGTH) {
+          textTooLong = true;
+        } else {
+          options.caption = text;
+          options.parse_mode = 'HTML';
+        }
+      } else {
+        // Проверяем длину текста
+        if (text.length > MAX_CAPTION_LENGTH) {
+          textTooLong = true;
+        } else {
+          options.caption = text;
+        }
+      }
+    }
+
+    // Добавляем клавиатуру, если есть
+    if (keyboard) {
+      options.reply_markup = keyboard;
+    }
+
+    // Если текст слишком длинный, отправляем его отдельно
+    if (textTooLong) {
+      // Сначала отправляем текст
+      await sendFormattedText(ctx, text, format, keyboard);
+
+      // Затем отправляем изображение без текста
+      await ctx.replyWithPhoto(imageAttachment.url);
+    } else {
+      // Отправляем изображение с текстом и клавиатурой
+      await ctx.replyWithPhoto(imageAttachment.url, options);
+    }
+
+    // Отправляем остальные вложения, если они есть
+    const otherAttachments = attachments.filter(att => att !== imageAttachment);
+    for (const attachment of otherAttachments) {
+      await sendAttachment(ctx, attachment);
+    }
+  } else {
+    // Если нет изображения, отправляем текст с клавиатурой
+    if (text) {
+      await sendFormattedText(ctx, text, format, keyboard);
+    } else if (keyboard) {
+      await ctx.reply('Выберите действие:', keyboard);
+    }
+
+    // Отправляем все вложения
+    for (const attachment of attachments) {
+      await sendAttachment(ctx, attachment);
+    }
   }
 }
 

@@ -3,6 +3,7 @@
 /.idea
 /dist
 /.junie
+/logs
 
 /node_modules
 /client/node_modules

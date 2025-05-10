@@ -111,7 +111,7 @@ export class SystemNodeHandler implements NodeHandler {
         throw new Error(`Не найден обработчик для узла типа ${targetNode.type}`);
       }
     } else {
-      await ctx.reply('Неизвестная команда');
+      await ctx.reply('Неизвестная команда. Пожалуйста выберете другую или нажмите \start');
     }
   }
 
@@ -138,7 +138,7 @@ export class SystemNodeHandler implements NodeHandler {
           throw new Error(`Не найден обработчик для узла типа ${previousNode.type}`);
         }
       } else {
-        await ctx.reply('Неизвестная команда');
+        await ctx.reply('Неизвестная команда. Пожалуйста выберете другую или нажмите \start');
       }
     } else {
       // Если истории нет, переходим к начальному узлу
@@ -152,7 +152,7 @@ export class SystemNodeHandler implements NodeHandler {
           throw new Error(`Не найден обработчик для узла типа ${startNode.type}`);
         }
       } else {
-        await ctx.reply('Неизвестная команда');
+        await ctx.reply('Неизвестная команда. Пожалуйста выберете другую или нажмите \start');
       }
     }
   }

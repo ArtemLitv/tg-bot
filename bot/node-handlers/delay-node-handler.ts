@@ -66,7 +66,7 @@ export class DelayNodeHandler implements NodeHandler {
         throw new Error(`Не найден обработчик для узла типа ${nextNode.type}`);
       }
     } else {
-      await ctx.reply('Неизвестная команда');
+      await ctx.reply('Неизвестная команда. Пожалуйста выберете другую или нажмите \start');
     }
   }
 }

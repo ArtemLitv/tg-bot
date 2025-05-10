@@ -137,7 +137,7 @@ export class InputNodeHandler implements NodeHandler {
             throw new Error(`Не найден обработчик для узла типа ${targetNode.type}`);
           }
         } else {
-          await ctx.reply('Неизвестная команда');
+          await ctx.reply('Неизвестная команда. Пожалуйста выберете другую или нажмите \start');
         }
         break;
         
@@ -166,7 +166,7 @@ export class InputNodeHandler implements NodeHandler {
               throw new Error(`Не найден обработчик для узла типа ${previousNode.type}`);
             }
           } else {
-            await ctx.reply('Неизвестная команда');
+            await ctx.reply('Неизвестная команда. Пожалуйста выберете другую или нажмите \start');
           }
         }
         break;

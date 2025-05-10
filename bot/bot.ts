@@ -209,7 +209,7 @@ export class Bot {
     }
 
     // Если не нашли подходящий узел или кнопку
-    await ctx.reply('Неизвестная команда');
+    await ctx.reply('Неизвестная команда. Пожалуйста выберете другую или нажмите \start');
   }
 
   /**
@@ -230,7 +230,7 @@ export class Bot {
     // Находим узел
     const targetNode = findNodeById(this.config, nodeId);
     if (!targetNode) {
-      await ctx.reply('Неизвестная команда');
+      await ctx.reply('Неизвестная команда. Пожалуйста выберете другую или нажмите \start');
       return;
     }
 
