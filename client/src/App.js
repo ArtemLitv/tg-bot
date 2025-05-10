@@ -1,15 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import ReactFlow, { 
-  MiniMap, 
-  Controls, 
-  Background,
-  useNodesState,
-  useEdgesState,
-  addEdge,
-} from 'reactflow';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
 import 'reactflow/dist/style.css';
-import dagre from 'dagre';
 
 // Импорт компонентов админ-панели
 import Login from './components/admin/Login';
@@ -20,219 +11,59 @@ import ConfigEditor from './components/admin/ConfigEditor';
 import LogViewer from './components/admin/LogViewer';
 import BotControl from './components/admin/BotControl';
 
-import NodeSidebar from './components/NodeSidebar';
-import CustomNode from './components/CustomNode';
+import { FlowChart } from "./compnents/FlowChart";
 
-// Функция для автоматической компоновки графа с использованием Dagre
-const getLayoutedElements = (nodes, edges, direction = 'TB') => {
-  const dagreGraph = new dagre.graphlib.Graph();
-  dagreGraph.setDefaultEdgeLabel(() => ({}));
-
-  // Настройка направления графа (TB - сверху вниз, LR - слева направо)
-  dagreGraph.setGraph({ rankdir: direction });
-
-  // Добавление узлов в граф Dagre
-  nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: 400, height: 80 });
-  });
-
-  // Добавление связей в граф Dagre
-  edges.forEach((edge) => {
-    dagreGraph.setEdge(edge.source, edge.target);
-  });
-
-  // Расчет компоновки
-  dagre.layout(dagreGraph);
-
-  // Применение рассчитанных позиций к узлам
-  const layoutedNodes = nodes.map((node) => {
-    const nodeWithPosition = dagreGraph.node(node.id);
-
-    return {
-      ...node,
-      position: {
-        x: nodeWithPosition.x - nodeWithPosition.width / 2,
-        y: nodeWithPosition.y - nodeWithPosition.height / 2,
-      },
-    };
-  });
-
-  return { nodes: layoutedNodes, edges };
-};
-
-// Регистрация пользовательских типов нод
-const nodeTypes = {
-  custom: CustomNode,
-};
-
-// Компонент для отображения графа узлов
-function FlowChart() {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [selectedNode, setSelectedNode] = useState(null);
-  const [, setBotConfig] = useState(null); // Неиспользуемая переменная botConfig удалена
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Загрузка конфигурации бота
-  useEffect(() => {
-    const fetchBotConfig = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch('/config/bot-config.json');
-        if (!response.ok) {
-          throw new Error('Не удалось загрузить конфигурацию бота');
-        }
-        const data = await response.json();
-        setBotConfig(data);
-
-        // Преобразование данных для reactflow
-        const flowNodes = [];
-        const flowEdges = [];
-
-        // Создание нод
-        data.nodes.forEach((node) => {
-          flowNodes.push({
-            id: node.id,
-            type: 'custom',
-            // Временная позиция, будет пересчитана с помощью Dagre
-            position: { x: 0, y: 0 },
-            data: { 
-              label: node.description,
-              nodeData: node
-            },
-          });
-
-          // Создание связей на основе кнопок
-          if (node.buttons) {
-            node.buttons.filter(button => !['В главное меню', 'Назад'].includes(button.label.ru)).forEach((button, index) => {
-              if (button.target_node_id) {
-                flowEdges.push({
-                  id: `${node.id}-${button.target_node_id}`,
-                  source: node.id,
-                  sourceHandle: `button-${index}`, // Указываем конкретную кнопку как источник связи
-                  target: button.target_node_id,
-                  animated: false,
-                  // label: button.label?.ru || '',
-                });
-              }
-            });
-          }
-
-          // Связи через кнопку назад удалены согласно требованиям
-        });
-
-        // Применение автоматической компоновки с использованием Dagre
-        const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-          flowNodes,
-          flowEdges,
-          'LR' // Направление графа слева направо
-        );
-
-        setNodes(layoutedNodes);
-        setEdges(layoutedEdges);
-      } catch (err) {
-        setError(err.message);
-        console.error('Ошибка при загрузке конфигурации:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchBotConfig();
-  }, [setNodes, setEdges]);
-
-  // Обработчик выбора ноды
-  const onNodeClick = useCallback((event, node) => {
-    setSelectedNode(node);
-  }, []);
-
-  // Обработчик соединения нод
-  const onConnect = useCallback((params) => {
-    setEdges((eds) => addEdge(params, eds));
-  }, [setEdges]);
-
-
-  if (isLoading) {
-    return <div>Загрузка конфигурации...</div>;
-  }
-
-  if (error) {
-    return <div>Ошибка: {error}</div>;
-  }
-
-  return (
-    <div className="flow-container">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        onNodeClick={onNodeClick}
-        nodeTypes={nodeTypes}
-        fitView
-      >
-        <Controls />
-        <MiniMap />
-        <Background variant="dots" gap={12} size={1} />
-      </ReactFlow>
-      {selectedNode && (
-        <NodeSidebar node={selectedNode} onClose={() => setSelectedNode(null)} />
-      )}
-    </div>
-  );
-}
 
 // Компонент для проверки авторизации
-function RequireAuth({ children }) {
-  const isAuthenticated = localStorage.getItem('authToken') !== null;
+function RequireAuth({children}) {
+    const isAuthenticated = localStorage.getItem('authToken') !== null;
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+    if (!isAuthenticated) {
+        return <Navigate to="/login" replace/>;
+    }
 
-  return children;
+    return children;
 }
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    localStorage.getItem('authToken') !== null
-  );
+    const [isAuthenticated, setIsAuthenticated] = useState(
+        localStorage.getItem('authToken') !== null
+    );
 
-  // Обработчик успешной авторизации
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-  };
+    // Обработчик успешной авторизации
+    const handleLogin = () => {
+        setIsAuthenticated(true);
+    };
 
-  return (
-    <Router>
-      <Routes>
-        {/* Маршрут для авторизации */}
-        <Route path="/login" element={<Login onLogin={handleLogin} />} />
+    return (
+        <Router>
+            <Routes>
+                {/* Маршрут для авторизации */}
+                <Route path="/login" element={<Login onLogin={handleLogin}/>}/>
 
-        {/* Маршруты для админ-панели */}
-        <Route path="/admin" element={
-          <RequireAuth>
-            <AdminLayout />
-          </RequireAuth>
-        }>
-          <Route index element={<Navigate to="/admin/users" replace />} />
-          <Route path="users" element={<UserTable />} />
-          <Route path="users/:userId" element={<UserHistory />} />
-          <Route path="config" element={<ConfigEditor />} />
-          <Route path="logs" element={<LogViewer />} />
-          <Route path="bot" element={<BotControl />} />
-        </Route>
+                {/* Маршруты для админ-панели */}
+                <Route path="/admin" element={
+                    <RequireAuth>
+                        <AdminLayout/>
+                    </RequireAuth>
+                }>
+                    <Route index element={<Navigate to="/admin/users" replace/>}/>
+                    <Route path="users" element={<UserTable/>}/>
+                    <Route path="users/:userId" element={<UserHistory/>}/>
+                    <Route path="config" element={<ConfigEditor/>}/>
+                    <Route path="logs" element={<LogViewer/>}/>
+                    <Route path="bot" element={<BotControl/>}/>
+                    <Route path="graph" element={<FlowChart/>}/>
+                </Route>
 
-        {/* Маршрут для графа узлов */}
-        <Route path="/" element={<FlowChart />} />
+                {/* Перенаправление с корневого маршрута на админ-панель */}
+                <Route path="/" element={<Navigate to="/admin/graph" replace/>}/>
 
-        {/* Перенаправление для неизвестных маршрутов */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
-  );
+                {/* Перенаправление для неизвестных маршрутов */}
+                <Route path="*" element={<Navigate to="/" replace/>}/>
+            </Routes>
+        </Router>
+    );
 }
 
 export default App;

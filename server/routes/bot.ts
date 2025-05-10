@@ -9,13 +9,15 @@ import { logInfo, logError } from '../logger';
 // Глобальная переменная для хранения экземпляра бота
 let botInstance: any = null;
 
+// Глобальная переменная для хранения статуса бота
+let botStatus: 'running' | 'stopped' = 'stopped';
+
 export function setupBotRoutes(app: Express, prisma: PrismaClient, authenticateJWT: any) {
 
   // Маршрут для получения статуса бота
   app.get('/api/bot/status', authenticateJWT, (req, res) => {
     try {
-      const status = botInstance ? 'running' : 'stopped';
-      res.json({ status });
+      res.json({ status: botStatus });
     } catch (error) {
       logError('Ошибка при получении статуса бота', error);
       res.status(500).json({ error: 'Внутренняя ошибка сервера' });
@@ -43,8 +45,11 @@ export function setupBotRoutes(app: Express, prisma: PrismaClient, authenticateJ
       botInstance = new Bot(telegramBotToken, configPath, prisma);
       await botInstance.start();
 
+      // Обновляем статус бота
+      botStatus = 'running';
+
       logInfo('Бот успешно запущен через API');
-      res.json({ status: 'running', message: 'Бот успешно запущен' });
+      res.json({ status: botStatus, message: 'Бот успешно запущен' });
     } catch (error) {
       logError('Ошибка при запуске бота', error);
       res.status(500).json({ error: 'Ошибка при запуске бота' });
@@ -62,8 +67,11 @@ export function setupBotRoutes(app: Express, prisma: PrismaClient, authenticateJ
       await botInstance.stop();
       botInstance = null;
 
+      // Обновляем статус бота
+      botStatus = 'stopped';
+
       logInfo('Бот успешно остановлен через API');
-      res.json({ status: 'stopped', message: 'Бот успешно остановлен' });
+      res.json({ status: botStatus, message: 'Бот успешно остановлен' });
     } catch (error) {
       logError('Ошибка при остановке бота', error);
       res.status(500).json({ error: 'Ошибка при остановке бота' });
@@ -77,6 +85,8 @@ export function setupBotRoutes(app: Express, prisma: PrismaClient, authenticateJ
       if (botInstance) {
         await botInstance.stop();
         botInstance = null;
+        // Временно устанавливаем статус "остановлен"
+        botStatus = 'stopped';
       }
 
       // Импортируем Bot динамически, чтобы избежать циклических зависимостей
@@ -93,8 +103,11 @@ export function setupBotRoutes(app: Express, prisma: PrismaClient, authenticateJ
       botInstance = new Bot(telegramBotToken, configPath, prisma);
       await botInstance.start();
 
+      // Обновляем статус бота
+      botStatus = 'running';
+
       logInfo('Бот успешно перезапущен через API');
-      res.json({ status: 'running', message: 'Бот успешно перезапущен' });
+      res.json({ status: botStatus, message: 'Бот успешно перезапущен' });
     } catch (error) {
       logError('Ошибка при перезапуске бота', error);
       res.status(500).json({ error: 'Ошибка при перезапуске бота' });
@@ -105,6 +118,8 @@ export function setupBotRoutes(app: Express, prisma: PrismaClient, authenticateJ
   return {
     setBotInstance: (bot: any) => {
       botInstance = bot;
+      // Обновляем статус бота в зависимости от наличия экземпляра
+      botStatus = bot ? 'running' : 'stopped';
     }
   };
 }
