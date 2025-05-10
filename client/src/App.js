@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ReactFlow, { 
   MiniMap, 
   Controls, 
@@ -9,6 +10,15 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import dagre from 'dagre';
+
+// Импорт компонентов админ-панели
+import Login from './components/admin/Login';
+import AdminLayout from './components/admin/AdminLayout';
+import UserTable from './components/admin/UserTable';
+import UserHistory from './components/admin/UserHistory';
+import ConfigEditor from './components/admin/ConfigEditor';
+import LogViewer from './components/admin/LogViewer';
+import BotControl from './components/admin/BotControl';
 
 import NodeSidebar from './components/NodeSidebar';
 import CustomNode from './components/CustomNode';
@@ -55,7 +65,8 @@ const nodeTypes = {
   custom: CustomNode,
 };
 
-function App() {
+// Компонент для отображения графа узлов
+function FlowChart() {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -151,27 +162,76 @@ function App() {
   }
 
   return (
-    <div className="app-container">
-      <div className="flow-container">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodeClick={onNodeClick}
-          nodeTypes={nodeTypes}
-          fitView
-        >
-          <Controls />
-          <MiniMap />
-          <Background variant="dots" gap={12} size={1} />
-        </ReactFlow>
-      </div>
+    <div className="flow-container">
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onNodeClick={onNodeClick}
+        nodeTypes={nodeTypes}
+        fitView
+      >
+        <Controls />
+        <MiniMap />
+        <Background variant="dots" gap={12} size={1} />
+      </ReactFlow>
       {selectedNode && (
         <NodeSidebar node={selectedNode} onClose={() => setSelectedNode(null)} />
       )}
     </div>
+  );
+}
+
+// Компонент для проверки авторизации
+function RequireAuth({ children }) {
+  const isAuthenticated = localStorage.getItem('authToken') !== null;
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
+function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    localStorage.getItem('authToken') !== null
+  );
+
+  // Обработчик успешной авторизации
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+  };
+
+  return (
+    <Router>
+      <Routes>
+        {/* Маршрут для авторизации */}
+        <Route path="/login" element={<Login onLogin={handleLogin} />} />
+
+        {/* Маршруты для админ-панели */}
+        <Route path="/admin" element={
+          <RequireAuth>
+            <AdminLayout />
+          </RequireAuth>
+        }>
+          <Route index element={<Navigate to="/admin/users" replace />} />
+          <Route path="users" element={<UserTable />} />
+          <Route path="users/:userId" element={<UserHistory />} />
+          <Route path="config" element={<ConfigEditor />} />
+          <Route path="logs" element={<LogViewer />} />
+          <Route path="bot" element={<BotControl />} />
+        </Route>
+
+        {/* Маршрут для графа узлов */}
+        <Route path="/" element={<FlowChart />} />
+
+        {/* Перенаправление для неизвестных маршрутов */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
   );
 }
 
