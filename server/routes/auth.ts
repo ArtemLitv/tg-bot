@@ -10,7 +10,7 @@ import { logInfo, logError } from '../logger';
 import { createAdmin, updateAdmin, deleteAdmin, getAllAdmins, getAdminById } from '../services/adminService';
 
 // Middleware для проверки JWT токена
-export const authenticateJWT = (req: any, res: any, next: any) => {
+const authenticateJWT = (req: any, res: any, next: any) => {
   const authHeader = req.headers.authorization;
 
   if (authHeader) {

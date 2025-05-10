@@ -29,14 +29,14 @@ const Login = ({ onLogin }) => {
   React.useEffect(() => {
     const params = new URLSearchParams(location.search);
     const token = params.get('token');
-    
+
     if (token) {
       // Сохраняем токен в localStorage
       localStorage.setItem('authToken', token);
-      
+
       // Перенаправляем на главную страницу админ-панели
       navigate('/admin', { replace: true });
-      
+
       // Вызываем функцию onLogin, если она передана
       if (onLogin) {
         onLogin();
@@ -49,30 +49,50 @@ const Login = ({ onLogin }) => {
     try {
       setLoading(true);
       setError('');
-      
+
       // Отправляем запрос на авторизацию
       const response = await axios.post('/api/auth/login', {
         username: data.username,
         password: data.password
+      }, {
+        timeout: 30000 // Устанавливаем таймаут в 30 секунд
       });
-      
+
       // Сохраняем токен в localStorage
       localStorage.setItem('authToken', response.data.token);
-      
+
       // Перенаправляем на главную страницу админ-панели
       navigate('/admin', { replace: true });
-      
+
       // Вызываем функцию onLogin, если она передана
       if (onLogin) {
         onLogin();
       }
     } catch (error) {
       console.error('Ошибка при авторизации:', error);
-      
-      if (error.response && error.response.data && error.response.data.error) {
-        setError(error.response.data.error);
+
+      if (error.response) {
+        // Сервер вернул ответ с ошибкой
+        if (error.response.data && error.response.data.error) {
+          // Если есть детальное сообщение об ошибке
+          let errorMessage = error.response.data.error;
+          if (error.response.data.details) {
+            errorMessage += ` ${error.response.data.details}`;
+          }
+          setError(errorMessage);
+        } else {
+          setError(`Ошибка сервера: ${error.response.status} ${error.response.statusText}`);
+        }
+      } else if (error.request) {
+        // Запрос был сделан, но ответ не получен
+        if (error.code === 'ECONNABORTED') {
+          setError('Превышено время ожидания ответа от сервера. Пожалуйста, попробуйте позже.');
+        } else {
+          setError('Сервер не отвечает. Убедитесь, что сервер запущен и доступен.');
+        }
       } else {
-        setError('Произошла ошибка при авторизации. Пожалуйста, попробуйте снова.');
+        // Что-то пошло не так при настройке запроса
+        setError(`Ошибка при выполнении запроса: ${error.message}`);
       }
     } finally {
       setLoading(false);
@@ -97,13 +117,13 @@ const Login = ({ onLogin }) => {
           <Typography component="h1" variant="h5">
             Вход в админ-панель
           </Typography>
-          
+
           {error && (
             <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
               {error}
             </Alert>
           )}
-          
+
           <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 3, width: '100%' }}>
             <TextField
               margin="normal"
@@ -140,9 +160,9 @@ const Login = ({ onLogin }) => {
             >
               {loading ? <CircularProgress size={24} /> : 'Войти'}
             </Button>
-            
+
             <Divider sx={{ my: 2 }}>или</Divider>
-            
+
             <Button
               fullWidth
               variant="outlined"

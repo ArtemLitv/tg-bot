@@ -1,0 +1,9 @@
+node_modules
+dist
+build
+client
+coverage
+.env
+.env.example
+*.js
+!.eslintrc.js

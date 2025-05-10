@@ -53,9 +53,9 @@ setupPassport(passport, prisma);
 app.use(express.static(path.join(__dirname, '../../client/build')));
 
 // Настраиваем маршруты
-setupAuthRoutes(app, passport, prisma);
-setupApiRoutes(app, prisma);
-const botRoutes = setupBotRoutes(app, prisma);
+const { authenticateJWT } = setupAuthRoutes(app, passport, prisma);
+setupApiRoutes(app, prisma, authenticateJWT);
+const botRoutes = setupBotRoutes(app, prisma, authenticateJWT);
 
 // Маршрут для всех остальных запросов - отдаем React приложение
 app.get('*', (req, res) => {

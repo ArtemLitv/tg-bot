@@ -153,24 +153,24 @@ const UserTable = () => {
     { field: 'firstName', headerName: 'Имя', width: 120 },
     { field: 'lastName', headerName: 'Фамилия', width: 120 },
     { field: 'languageCode', headerName: 'Язык', width: 80 },
-    { 
-      field: 'currentNodeId', 
-      headerName: 'Текущий узел', 
+    {
+      field: 'currentNodeId',
+      headerName: 'Текущий узел',
       width: 150,
       valueGetter: (params) => params.row.currentNodeId || 'Не определен'
     },
-    { 
-      field: 'lastActivityAt', 
-      headerName: 'Последняя активность', 
+    {
+      field: 'lastActivityAt',
+      headerName: 'Последняя активность',
       width: 200,
       valueGetter: (params) => {
         const date = new Date(params.row.lastActivityAt);
         return date.toLocaleString('ru-RU');
       }
     },
-    { 
-      field: 'createdAt', 
-      headerName: 'Дата регистрации', 
+    {
+      field: 'createdAt',
+      headerName: 'Дата регистрации',
       width: 200,
       valueGetter: (params) => {
         const date = new Date(params.row.createdAt);
@@ -282,7 +282,7 @@ const UserTable = () => {
           filterMode="server"
           rowCount={totalUsers}
           onRowClick={handleRowClick}
-          localeText={ruRU.components.MuiDataGrid.defaultProps.localeText}
+          localeText={ruRU}
           sx={{
             '& .MuiDataGrid-row:hover': {
               cursor: 'pointer',

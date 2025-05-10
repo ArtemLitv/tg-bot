@@ -9,9 +9,7 @@ import { logInfo, logError } from '../logger';
 // Глобальная переменная для хранения экземпляра бота
 let botInstance: any = null;
 
-export function setupBotRoutes(app: Express, prisma: PrismaClient) {
-  // Получаем middleware для проверки JWT токена из auth.ts
-  const { authenticateJWT } = require('./auth');
+export function setupBotRoutes(app: Express, prisma: PrismaClient, authenticateJWT: any) {
 
   // Маршрут для получения статуса бота
   app.get('/api/bot/status', authenticateJWT, (req, res) => {
@@ -33,18 +31,18 @@ export function setupBotRoutes(app: Express, prisma: PrismaClient) {
 
       // Импортируем Bot динамически, чтобы избежать циклических зависимостей
       const { Bot } = await import('../bot');
-      
+
       const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
       const configPath = process.env.BOT_CONFIG_PATH || 'config/bot-config.json';
-      
+
       if (!telegramBotToken) {
         return res.status(400).json({ error: 'Не указан токен бота в переменных окружения (TELEGRAM_BOT_TOKEN)' });
       }
-      
+
       // Создаем и запускаем бота
       botInstance = new Bot(telegramBotToken, configPath, prisma);
       await botInstance.start();
-      
+
       logInfo('Бот успешно запущен через API');
       res.json({ status: 'running', message: 'Бот успешно запущен' });
     } catch (error) {
@@ -59,11 +57,11 @@ export function setupBotRoutes(app: Express, prisma: PrismaClient) {
       if (!botInstance) {
         return res.status(400).json({ error: 'Бот не запущен' });
       }
-      
+
       // Останавливаем бота
       await botInstance.stop();
       botInstance = null;
-      
+
       logInfo('Бот успешно остановлен через API');
       res.json({ status: 'stopped', message: 'Бот успешно остановлен' });
     } catch (error) {
@@ -80,21 +78,21 @@ export function setupBotRoutes(app: Express, prisma: PrismaClient) {
         await botInstance.stop();
         botInstance = null;
       }
-      
+
       // Импортируем Bot динамически, чтобы избежать циклических зависимостей
       const { Bot } = await import('../bot');
-      
+
       const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
       const configPath = process.env.BOT_CONFIG_PATH || 'config/bot-config.json';
-      
+
       if (!telegramBotToken) {
         return res.status(400).json({ error: 'Не указан токен бота в переменных окружения (TELEGRAM_BOT_TOKEN)' });
       }
-      
+
       // Создаем и запускаем бота
       botInstance = new Bot(telegramBotToken, configPath, prisma);
       await botInstance.start();
-      
+
       logInfo('Бот успешно перезапущен через API');
       res.json({ status: 'running', message: 'Бот успешно перезапущен' });
     } catch (error) {
