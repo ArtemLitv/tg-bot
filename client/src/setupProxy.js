@@ -53,4 +53,19 @@ module.exports = function(app) {
       }
     })
   );
+
+  // Настройка прокси для WebSocket
+  app.use(
+    '/ws',
+    createProxyMiddleware({
+      target: 'http://localhost:3001',
+      changeOrigin: true,
+      ws: true, // Включаем поддержку WebSocket
+      // Добавляем обработку ошибок
+      onError: (err, req, res) => {
+        console.error('Ошибка WebSocket прокси-сервера:', err);
+        // Для WebSocket ошибки обрабатываются на клиенте
+      }
+    })
+  );
 };

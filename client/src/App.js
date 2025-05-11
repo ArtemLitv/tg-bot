@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Route, Routes, createBrowserRouter, RouterProvider } from 'react-router-dom';
 import 'reactflow/dist/style.css';
 
 // Импорт компонентов админ-панели
@@ -35,35 +35,67 @@ function App() {
         setIsAuthenticated(true);
     };
 
-    return (
-        <Router>
-            <Routes>
-                {/* Маршрут для авторизации */}
-                <Route path="/login" element={<Login onLogin={handleLogin}/>}/>
+    // Создаем роутер с future flags для React Router v7
+    const router = createBrowserRouter([
+        // Маршрут для авторизации
+        {
+            path: "/login",
+            element: <Login onLogin={handleLogin}/>
+        },
+        // Маршруты для админ-панели
+        {
+            path: "/admin",
+            element: <RequireAuth><AdminLayout/></RequireAuth>,
+            children: [
+                {
+                    index: true,
+                    element: <Navigate to="/admin/users" replace/>
+                },
+                {
+                    path: "users",
+                    element: <UserTable/>
+                },
+                {
+                    path: "users/:userId",
+                    element: <UserHistory/>
+                },
+                {
+                    path: "config",
+                    element: <ConfigEditor/>
+                },
+                {
+                    path: "logs",
+                    element: <LogViewer/>
+                },
+                {
+                    path: "bot",
+                    element: <BotControl/>
+                },
+                {
+                    path: "graph",
+                    element: <FlowChart/>
+                }
+            ]
+        },
+        // Перенаправление с корневого маршрута на админ-панель
+        {
+            path: "/",
+            element: <Navigate to="/admin/graph" replace/>
+        },
+        // Перенаправление для неизвестных маршрутов
+        {
+            path: "*",
+            element: <Navigate to="/" replace/>
+        }
+    ], {
+        // Добавляем future flags для React Router v7
+        future: {
+            v7_startTransition: true,
+            v7_relativeSplatPath: true
+        }
+    });
 
-                {/* Маршруты для админ-панели */}
-                <Route path="/admin" element={
-                    <RequireAuth>
-                        <AdminLayout/>
-                    </RequireAuth>
-                }>
-                    <Route index element={<Navigate to="/admin/users" replace/>}/>
-                    <Route path="users" element={<UserTable/>}/>
-                    <Route path="users/:userId" element={<UserHistory/>}/>
-                    <Route path="config" element={<ConfigEditor/>}/>
-                    <Route path="logs" element={<LogViewer/>}/>
-                    <Route path="bot" element={<BotControl/>}/>
-                    <Route path="graph" element={<FlowChart/>}/>
-                </Route>
-
-                {/* Перенаправление с корневого маршрута на админ-панель */}
-                <Route path="/" element={<Navigate to="/admin/graph" replace/>}/>
-
-                {/* Перенаправление для неизвестных маршрутов */}
-                <Route path="*" element={<Navigate to="/" replace/>}/>
-            </Routes>
-        </Router>
-    );
+    return <RouterProvider router={router} />;
 }
 
 export default App;

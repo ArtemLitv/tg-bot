@@ -46,8 +46,8 @@ const AdminLayout = () => {
                     setUser(response.data.user);
                 } catch (error) {
                     console.error('Ошибка при получении информации о пользователе:', error);
-                    if (error.response && error.response.status === 401) {
-                        // Если токен недействителен, перенаправляем на страницу входа
+                    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+                        // Если токен недействителен или доступ запрещен, перенаправляем на страницу входа
                         localStorage.removeItem('authToken');
                         navigate('/login');
                     }
