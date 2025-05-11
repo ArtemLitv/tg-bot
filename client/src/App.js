@@ -10,8 +10,8 @@ import UserHistory from './components/admin/UserHistory';
 import ConfigEditor from './components/admin/ConfigEditor';
 import LogViewer from './components/admin/LogViewer';
 import BotControl from './components/admin/BotControl';
+import { FlowChart } from "./components/FlowChart";
 
-import { FlowChart } from "./compnents/FlowChart";
 
 
 // Компонент для проверки авторизации
