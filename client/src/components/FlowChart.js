@@ -86,12 +86,33 @@ export function FlowChart() {
     // Обработчик выбора ноды
     const onNodeClick = useCallback((event, node) => {
         setSelectedNode(node);
-    }, []);
+
+        // Обновляем ноды, чтобы выделить выбранную ноду
+        setNodes((nds) =>
+            nds.map((n) => ({
+                ...n,
+                selected: n.id === node.id,
+            }))
+        );
+    }, [setNodes]);
 
     // Обработчик соединения нод
     const onConnect = useCallback((params) => {
         setEdges((eds) => addEdge(params, eds));
     }, [setEdges]);
+
+    // Обработчик клика на пустое место графа
+    const onPaneClick = useCallback(() => {
+        setSelectedNode(null);
+
+        // Снимаем выделение со всех нод
+        setNodes((nds) =>
+            nds.map((n) => ({
+                ...n,
+                selected: false,
+            }))
+        );
+    }, [setNodes]);
 
 
     if (isLoading) {
@@ -116,6 +137,7 @@ export function FlowChart() {
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 onNodeClick={onNodeClick}
+                onPaneClick={onPaneClick}
                 nodeTypes={nodeTypes}
                 fitView
             >
