@@ -15,6 +15,76 @@ export function FlowChart() {
     const [error, setError] = useState(null);
     const location = useLocation(); // Получаем текущий путь
 
+    // Кастомный обработчик изменения нод, который перемещает дочерние ноды вместе с родительской
+    // Этот обработчик перехватывает события перетаскивания нод и, если нода перетаскивается,
+    // также перемещает все её дочерние ноды (включая потомков потомков) на то же расстояние
+    const handleNodesChange = useCallback((changes) => {
+        // Применяем стандартный обработчик изменений
+        onNodesChange(changes);
+
+        // Обрабатываем только изменения позиции (перетаскивание)
+        const positionChanges = changes.filter(change => 
+            change.type === 'position' && change.position && change.dragging
+        );
+
+        if (positionChanges.length > 0) {
+            positionChanges.forEach(change => {
+                const nodeId = change.id;
+                const position = change.position;
+
+                // Получаем текущую ноду для определения смещения
+                const parentNode = nodes.find(node => node.id === nodeId);
+                if (!parentNode) return;
+
+                // Вычисляем смещение от предыдущей позиции
+                const deltaX = position.x - parentNode.position.x;
+                const deltaY = position.y - parentNode.position.y;
+
+                // Функция для рекурсивного поиска всех дочерних нод
+                const findAllChildNodes = (nodeId, visited = new Set()) => {
+                    // Предотвращаем бесконечную рекурсию при циклических связях
+                    if (visited.has(nodeId)) return [];
+                    visited.add(nodeId);
+
+                    // Находим непосредственных потомков
+                    const directChildren = edges
+                        .filter(edge => edge.source === nodeId)
+                        .map(edge => edge.target);
+
+                    // Рекурсивно находим потомков потомков
+                    const allChildren = [...directChildren];
+                    directChildren.forEach(childId => {
+                        const childrenOfChild = findAllChildNodes(childId, visited);
+                        allChildren.push(...childrenOfChild);
+                    });
+
+                    return allChildren;
+                };
+
+                // Получаем все дочерние ноды, включая потомков потомков
+                const allChildNodeIds = findAllChildNodes(nodeId);
+
+                if (allChildNodeIds.length > 0) {
+                    // Обновляем позиции всех дочерних нод
+                    setNodes(nds => 
+                        nds.map(node => {
+                            if (allChildNodeIds.includes(node.id)) {
+                                return {
+                                    ...node,
+                                    position: {
+                                        x: node.position.x + deltaX,
+                                        y: node.position.y + deltaY
+                                    }
+                                };
+                            }
+                            return node;
+                        })
+                    );
+                }
+            });
+        }
+    }, [nodes, edges, onNodesChange, setNodes]);
+
     // Загрузка конфигурации бота
     useEffect(() => {
         const fetchBotConfig = async () => {
@@ -133,7 +203,7 @@ export function FlowChart() {
             <ReactFlow
                 nodes={nodes}
                 edges={edges}
-                onNodesChange={onNodesChange}
+                onNodesChange={handleNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 onNodeClick={onNodeClick}
