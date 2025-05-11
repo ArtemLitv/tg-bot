@@ -152,7 +152,23 @@ html, body, #root {
     position: relative;
     overflow: hidden;
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-areas:
+    "header header"
+    "main sidebar";
+    grid-template-columns: 1fr auto; /* основная часть занимает все доступное пространство */
+    grid-template-rows: auto 1fr;
+}
+
+.header {
+    grid-area: header;
+}
+
+.flow {
+    grid-area: main;
+}
+
+.sidebar {
+    grid-area: sidebar;
 }
 
 /* Стили для контейнера приложения */

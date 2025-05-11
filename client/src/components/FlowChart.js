@@ -5,6 +5,8 @@ import { useLocation } from "react-router-dom";
 import NodeSidebar from "../components/NodeSidebar";
 import dagre from 'dagre';
 import CustomNode from "../components/CustomNode";
+import SettingsBar from "../components/SettingsBar";
+import './FlowChartSettings.css';
 
 export function FlowChart() {
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -13,14 +15,18 @@ export function FlowChart() {
     const [, setBotConfig] = useState(null); // Неиспользуемая переменная botConfig удалена
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [moveChildrenWithParent, setMoveChildrenWithParent] = useState(true); // Состояние для настройки перемещения дочерних нод
     const location = useLocation(); // Получаем текущий путь
 
     // Кастомный обработчик изменения нод, который перемещает дочерние ноды вместе с родительской
-    // Этот обработчик перехватывает события перетаскивания нод и, если нода перетаскивается,
+    // Этот обработчик перехватывает события перетаскивания нод и, если нода перетаскивается и включена соответствующая настройка,
     // также перемещает все её дочерние ноды (включая потомков потомков) на то же расстояние
     const handleNodesChange = useCallback((changes) => {
         // Применяем стандартный обработчик изменений
         onNodesChange(changes);
+
+        // Если настройка перемещения дочерних нод выключена, не выполняем дополнительную логику
+        if (!moveChildrenWithParent) return;
 
         // Обрабатываем только изменения позиции (перетаскивание)
         const positionChanges = changes.filter(change => 
@@ -83,7 +89,7 @@ export function FlowChart() {
                 }
             });
         }
-    }, [nodes, edges, onNodesChange, setNodes]);
+    }, [nodes, edges, onNodesChange, setNodes, moveChildrenWithParent]);
 
     // Загрузка конфигурации бота
     useEffect(() => {
@@ -198,9 +204,19 @@ export function FlowChart() {
         ? 'admin-flow-container'
         : 'flow-container';
 
+
     return (
         <div className={containerClass}>
+            {/* Отображаем полосу с настройками только на странице /admin/graph */}
+            {location.pathname === '/admin/graph' && 
+                <SettingsBar 
+                    className={'header'} 
+                    moveChildrenWithParent={moveChildrenWithParent}
+                    setMoveChildrenWithParent={setMoveChildrenWithParent}
+                />
+            }
             <ReactFlow
+                className={'flow'}
                 nodes={nodes}
                 edges={edges}
                 onNodesChange={handleNodesChange}
@@ -216,7 +232,7 @@ export function FlowChart() {
                 <Background variant="dots" gap={12} size={1}/>
             </ReactFlow>
             {selectedNode && (
-                <NodeSidebar node={selectedNode} onClose={() => setSelectedNode(null)}/>
+                <NodeSidebar className={'sidebar'} node={selectedNode} onClose={() => setSelectedNode(null)}/>
             )}
         </div>
     );
